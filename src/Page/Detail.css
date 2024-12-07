@@ -1,0 +1,270 @@
+.Detail-main {
+    flex: 1;
+    padding: 20px;
+    background-color: #ecf0f1;
+  }
+  
+  .Detail-heading {
+    margin-bottom: 20px;
+  }
+  
+  .add-button {
+    background-color: #600000;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  
+  .add-button:hover {
+    background-color: #d32f2f;
+  }
+  
+  /* General Table Styling */
+  .Detail-table {
+    font-size: 15px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #ffffff;
+  }
+  
+  .Detail-table th,
+  .Detail-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .Detail-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .Detail-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .Detail-table tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  /* Action Button Container */
+  .action {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    justify-content: flex-start; /* Align buttons to the left */
+  }
+  
+  /* Update Button Styling */
+  .update-button {
+    background-color: #007bff; /* Blue background */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .update-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+  
+  .update-button:active {
+    transform: scale(0.97); /* Slightly shrink on click */
+  }
+  
+  /* Delete Button Styling */
+  .delete-button {
+    background-color: #dc3545; /* Red background */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .delete-button:hover {
+    background-color: #a71d2a; /* Darker red on hover */
+  }
+  
+  .delete-button:active {
+    transform: scale(0.97); /* Slightly shrink on click */
+  }
+  
+  /* Table Cell Button Alignment */
+  .Detail-table td .action-button {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+  
+  .modal-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .modal-form input,
+  .modal-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .modal-buttons {
+    display: flex; /* Arrange buttons horizontally */
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 10px; /* Add space between buttons */
+    margin-top: 20px; /* Add some space above the buttons */
+  }
+  
+  .modal-submit-button,
+  .modal-close-button {
+    background-color: #4CAF50; /* Default green background for submit */
+    color: white; /* White text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 20px; /* Add padding for a nice size */
+    font-size: 16px; /* Text size */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover and click effects */
+  }
+  
+  /* Submit button specific styles */
+  .modal-submit-button {
+    background-color: #4CAF50; /* Green */
+  }
+  
+  .modal-submit-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+  }
+  
+  /* Close button specific styles */
+  .modal-close-button {
+    background-color: #e74c3c; /* Red for cancel */
+  }
+  
+  .modal-close-button:hover {
+    background-color: #c0392b; /* Darker red on hover */
+  }
+  
+  /* Button interaction effects */
+  .modal-submit-button:active,
+  .modal-close-button:active {
+    transform: scale(0.97); /* Slight shrink on click */
+  }
+  
+  /* Disabled button style */
+  .modal-submit-button:disabled,
+  .modal-close-button:disabled {
+    background-color: #ccc; /* Gray background */
+    color: #666; /* Dimmed text */
+    cursor: not-allowed; /* No pointer events */
+    opacity: 0.6; /* Faded look */
+  }
+  
+  .cost-inputs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .cost-inputs input {
+    width: 80px;
+    padding: 5px;
+    text-align: center;
+    color: #666;
+  }
+  
+  .cost-inputs span {
+    font-weight: bold;
+    color: #666;
+  }
+  
+  /* Style for the date input */
+  input[type="date"] {
+    width: 50%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    color: #666;
+  }
+  
+  input[type="date"]:focus {
+    outline: none; 
+  }
+  
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    border-radius: 4px;
+    padding: 2px;
+  }
+  
+  input[type="date"]::-webkit-input-placeholder {
+    color: #666; 
+  }
+  
+  input[type="date"]:disabled {
+    background-color: #f0f0f0; 
+    cursor: not-allowed;
+  }
+  
+  /* Style for the select dropdown */
+  select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    color: #666;
+  }
+  
+  /* Style for the select when it’s focused */
+  select:focus {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #333;
+  }
+  
+  /* Option style */
+  select option {
+    padding: 10px;
+    color: #666;
+  }
+  
+  /* Placeholder style */
+  select option[value=""] {
+    display: none;
+  }
+  

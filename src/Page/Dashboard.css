@@ -1,9 +1,7 @@
-.dashboard{
-  height: 100vh;
-}
-
 .dashboard-container {
-  display: flex;  
+  height: 100vh;
+  display: flex; 
+  width: 100%;
 }
 
 /* Sidebar styling */
@@ -22,11 +20,6 @@
   justify-content: flex-start;
 }
 
-.company-logo,
-.company-icon {
-  margin-right: 8px;
-}
-
 .company-logo {
   width: 50px;
   height: 50px;
@@ -42,8 +35,9 @@
   align-items: center;
   background-color: #fdfbfb;
   border-radius: 50%;
-  font-size: 15px;
   border: 2px solid #e7cbcb;
+  font-size: 30px;
+  color: #600000;
 }
 
 .company-name {
@@ -51,11 +45,7 @@
   font-size: 20px;
   font-weight: bold;
   margin-top: 10px;
-}
-
-.company-icon i {
-  font-size: 30px;
-  color: #600000;
+  margin-left: 8px;
 }
 
 nav ul {
@@ -193,16 +183,4 @@ nav li a:hover {
 
 .dashboard-button:hover {
   background-color: #d32f2f;
-}
-
-/* Footer Style */
-.login-footer {
-  text-align: center;
-  margin-top: auto;
-  font-size: 14px;
-  color: #555;
-}
-
-.login-footer p {
-  margin: 0;
 }

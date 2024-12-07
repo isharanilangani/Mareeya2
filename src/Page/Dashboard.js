@@ -19,7 +19,6 @@ function Dashboard() {
   const hasLogo = false;
 
   return (
-    <div className="dashboard">
       <div className="dashboard-container">
         <aside className="dashboard-sidebar">
           <div className="company-header">
@@ -121,12 +120,6 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      <footer className="login-footer">
-        <p>
-          Solution by DraveSpace<br></br>077 673 4021
-        </p>
-      </footer>
-    </div>
   );
 }
 

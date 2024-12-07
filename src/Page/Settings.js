@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Settings.css"; 
+import "./Dashboard.css";
+import "./Settings.css";
 
 function Settings() {
   const [username, setUsername] = useState("");
@@ -39,7 +40,7 @@ function Settings() {
         <div className="company-header">
           {hasLogo ? (
             <img
-              src="https://via.placeholder.com/60" 
+              src="https://via.placeholder.com/60"
               alt="Company Logo"
               className="company-logo"
             />
@@ -61,7 +62,9 @@ function Settings() {
             <li onClick={toggleDetails} className="details-toggle">
               Details
               <i
-                className={`fa ${isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"}`}
+                className={`fa ${
+                  isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"
+                }`}
                 style={{ marginLeft: "10px" }}
               ></i>
             </li>
@@ -87,7 +90,7 @@ function Settings() {
           <i className="fa fa-sign-out"></i> Sign Out
         </button>
       </aside>
-      
+
       {/* Main Content */}
       <main className="settings-main">
         <h1>Settings</h1>
