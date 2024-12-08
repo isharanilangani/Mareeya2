@@ -1,5 +1,7 @@
 // src/LoginPage.js
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./LoginPage.css";
 
 const LoginPage = () => {
@@ -9,47 +11,37 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reset previous error
-    setSuccess(false); // Reset previous success state
-    setLoading(true); // Set loading state to true
-
-    // Basic validation for username and password
-    if (!username || !password) {
-      setError("Both fields are required.");
-      setLoading(false); // Stop loading if validation fails
-      return;
-    }
+    setError("");
+    setSuccess(false);
+    setLoading(true);
 
     try {
-      // Send POST request to the backend
-      const response = await fetch("http://localhost:10000/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await axios.post(
+        "http://localhost:10000/api/auth/login",
+        {
+          username,
+          password,
+        }
+      );
 
-      // Check if the response is OK
-      if (!response.ok) {
-        throw new Error("Invalid username or password");
-      }
+      console.log("Login successful:", response.data);
 
-      // Parse the response
-      const data = await response.json();
+      // Save the token in localStorage for future requests
+      localStorage.setItem("token", response.data.token);
 
-      if (data.success) {
-        setSuccess(true);
-        console.log("Login successful:", data);
-      } else {
-        setError("Invalid username or password");
-      }
+      // Redirect to the dashboard page
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+      console.error("Login error:", err.response?.data || err.message);
+      setError(
+        err.response?.data?.message || "Login failed. Please try again."
+      );
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
