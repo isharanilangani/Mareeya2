@@ -2,25 +2,59 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import "./Settings.css";
+import axios from "axios"; 
 
 function Settings() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
+  const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState(null); 
 
+  const navigate = useNavigate();
+
+  // Handle profile picture change
   const handleProfilePictureChange = (e) => {
     setProfilePicture(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    console.log("Username:", username);
-    console.log("Password:", password);
-    console.log("Profile Picture:", profilePicture);
+  // Trigger input file click when the camera icon is clicked
+  const handleCameraClick = () => {
+    document.getElementById("profile-picture").click();
   };
 
-  const navigate = useNavigate();
+  // Handle form submit (send data to backend)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    if (!profilePicture) {
+      setError("Please select an image.");
+      setLoading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("profilePicture", profilePicture);
+    formData.append("username", username);
+    formData.append("password", password);
+
+    try {
+      const response = await axios.put("http://localhost:10000/api/auth/update", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Profile updated:", response.data);
+      setLoading(false);
+      navigate("/dashboard"); 
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("There was an error updating your profile.");
+      setLoading(false);
+    }
+  };
 
   const handleSignOut = () => {
     navigate("/");
@@ -62,9 +96,7 @@ function Settings() {
             <li onClick={toggleDetails} className="details-toggle">
               Details
               <i
-                className={`fa ${
-                  isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"
-                }`}
+                className={`fa ${isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"}`}
                 style={{ marginLeft: "10px" }}
               ></i>
             </li>
@@ -102,10 +134,18 @@ function Settings() {
                 id="profile-picture"
                 accept="image/*"
                 onChange={handleProfilePictureChange}
+                style={{ display: "none" }}
               />
-              <div className="camera-icon">
+              <div className="camera-icon" onClick={handleCameraClick}>
                 <i className="fa fa-camera"></i>
               </div>
+
+              {/* Preview the image */}
+              {profilePicture && (
+                <div className="image-preview">
+                  <img src={URL.createObjectURL(profilePicture)} alt="Profile Preview" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -131,8 +171,10 @@ function Settings() {
             />
           </div>
 
-          <button type="submit" className="save-button">
-            Save Changes
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="save-button" disabled={loading}>
+            {loading ? "Saving..." : "Save Changes"}
           </button>
         </form>
       </main>
