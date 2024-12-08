@@ -71,8 +71,11 @@ router.put("/update", async (req, res) => {
 
   // Basic validation
   if (!username || !password ) {
-    return res.status(400).send({ message: "Username, password, and image URL are required." });
+    return res.status(400).send({ message: "Username and password are required." });
   }
+
+  // Set default image_url to 'N/A' if not provided
+  const updatedImageUrl = image_url || "N/A";
 
   try {
     // Hash the new password
@@ -85,7 +88,7 @@ router.put("/update", async (req, res) => {
       WHERE pk_id = ?
     `;
 
-    db.query(sql, [username, hashedPassword, image_url, userId], (err, results) => {
+    db.query(sql, [username, hashedPassword, updatedImageUrl, userId], (err, results) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).send({ message: "Internal server error" });
