@@ -3,11 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import "./Settings.css";
 import axios from "axios"; 
+import Cropper from "react-cropper";
+import "cropperjs/dist/cropper.css"; // Import Cropper.js CSS
 
 function Settings() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
   const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null); 
 
@@ -15,12 +18,21 @@ function Settings() {
 
   // Handle profile picture change
   const handleProfilePictureChange = (e) => {
-    setProfilePicture(e.target.files[0]);
+    const file = e.target.files[0];
+    setProfilePicture(file);
   };
 
   // Trigger input file click when the camera icon is clicked
   const handleCameraClick = () => {
     document.getElementById("profile-picture").click();
+  };
+
+  // Handle image cropping
+  const handleCrop = () => {
+    if (profilePicture) {
+      const croppedUrl = cropper.getCroppedCanvas().toDataURL();
+      setCroppedImage(croppedUrl);
+    }
   };
 
   // Handle form submit (send data to backend)
@@ -29,14 +41,14 @@ function Settings() {
     setLoading(true);
     setError(null);
 
-    if (!profilePicture) {
-      setError("Please select an image.");
+    if (!croppedImage) {
+      setError("Please crop and select an image.");
       setLoading(false);
       return;
     }
 
     const formData = new FormData();
-    formData.append("profilePicture", profilePicture);
+    formData.append("profilePicture", croppedImage); // Send cropped image data
     formData.append("username", username);
     formData.append("password", password);
 
@@ -67,6 +79,8 @@ function Settings() {
   const toggleDetails = () => {
     setIsDetailsOpen((prev) => !prev);
   };
+
+  let cropper = null;
 
   return (
     <div className="dashboard-container">
@@ -140,10 +154,31 @@ function Settings() {
                 <i className="fa fa-camera"></i>
               </div>
 
-              {/* Preview the image */}
+              {/* Cropper Preview */}
               {profilePicture && (
+                <div className="cropper-container">
+                  <Cropper
+                    src={URL.createObjectURL(profilePicture)}
+                    style={{ height: "400px", width: "100%" }}
+                    initialAspectRatio={1}
+                    guides={false}
+                    scalable={true}
+                    zoomable={true}
+                    cropBoxResizable={true}
+                    onInitialized={(instance) => {
+                      cropper = instance;
+                    }}
+                  />
+                  <button type="button" onClick={handleCrop} className="crop-button">
+                    Crop Image
+                  </button>
+                </div>
+              )}
+
+              {/* Preview the cropped image */}
+              {croppedImage && (
                 <div className="image-preview">
-                  <img src={URL.createObjectURL(profilePicture)} alt="Profile Preview" />
+                  <img src={croppedImage} alt="Cropped Profile Preview" />
                 </div>
               )}
             </div>
