@@ -63,7 +63,7 @@ router.post("/login", (req, res) => {
 
 // API to update username, password, and image_url
 router.put("/update", async (req, res) => {
-  const { username, password, image_url, userId } = req.body;
+  const { username, password, userId } = req.body;
 
   if (!userId) {
     return res.status(400).send({ message: "User ID is required for updating profile." });
@@ -74,9 +74,6 @@ router.put("/update", async (req, res) => {
     return res.status(400).send({ message: "Username and password are required." });
   }
 
-  // Set default image_url to 'N/A' if not provided
-  const updatedImageUrl = image_url || "N/A";
-
   try {
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -84,11 +81,11 @@ router.put("/update", async (req, res) => {
     // SQL query to update the user's details
     const sql = `
       UPDATE user
-      SET username = ?, password = ?, image_url = ?
+      SET username = ?, password = ?
       WHERE pk_id = ?
     `;
 
-    db.query(sql, [username, hashedPassword, updatedImageUrl, userId], (err, results) => {
+    db.query(sql, [username, hashedPassword, userId], (err, results) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).send({ message: "Internal server error" });
