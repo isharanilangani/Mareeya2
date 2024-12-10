@@ -9,6 +9,7 @@ function Settings() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const navigate = useNavigate();
 
@@ -17,28 +18,35 @@ function Settings() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
-    const formData = new FormData();
-    formData.append("username", username);
-    formData.append("password", password);
+    setSuccess(null);
 
     try {
       const response = await axios.put(
         "http://localhost:10000/api/auth/update",
-        formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          username,
+          password,
+          userId: "14", 
         }
       );
-      console.log("Profile updated:", response.data);
+
+      setSuccess("Profile updated successfully!");
       setLoading(false);
+
+      // Optionally, navigate after successful update
       navigate("/dashboard");
     } catch (err) {
-      console.error("Error updating profile:", err);
-      setError("There was an error updating your profile.");
       setLoading(false);
+      if (err.response) {
+        // Server responded with an error
+        setError(err.response.data.message || "Update failed.");
+      } else if (err.request) {
+        // Request was made but no response received
+        setError("No response from the server. Please try again.");
+      } else {
+        // Something else happened
+        setError("An unexpected error occurred.");
+      }
     }
   };
 
@@ -51,8 +59,6 @@ function Settings() {
   const toggleDetails = () => {
     setIsDetailsOpen((prev) => !prev);
   };
-
-  let cropper = null;
 
   return (
     <div className="dashboard-container">
@@ -127,6 +133,7 @@ function Settings() {
           </div>
 
           {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
 
           <button type="submit" className="save-button" disabled={loading}>
             {loading ? "Saving..." : "Save Changes"}

@@ -16,8 +16,6 @@ function Dashboard() {
     navigate("/");
   };
 
-  const hasLogo = false;
-
   return (
       <div className="dashboard-container">
         <aside className="dashboard-sidebar">

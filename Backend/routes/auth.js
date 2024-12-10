@@ -61,48 +61,5 @@ router.post("/login", (req, res) => {
   });
 });
 
-// API to update username, password, and image_url
-router.put("/update", async (req, res) => {
-  const { username, password, userId } = req.body;
-
-  if (!userId) {
-    return res.status(400).send({ message: "User ID is required for updating profile." });
-  }
-
-  // Basic validation
-  if (!username || !password ) {
-    return res.status(400).send({ message: "Username and password are required." });
-  }
-
-  try {
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // SQL query to update the user's details
-    const sql = `
-      UPDATE user
-      SET username = ?, password = ?
-      WHERE pk_id = ?
-    `;
-
-    db.query(sql, [username, hashedPassword, userId], (err, results) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).send({ message: "Internal server error" });
-      }
-
-      if (results.affectedRows === 0) {
-        return res.status(404).send({ message: "User not found" });
-      }
-
-      // Respond with success
-      res.send({ message: "User details updated successfully" });
-    });
-  } catch (err) {
-    console.error("Error updating user details:", err);
-    return res.status(500).send({ message: "Error processing update" });
-  }
-});
-
 
 module.exports = router;
