@@ -161,8 +161,6 @@ const DetailDriverPayments = () => {
     navigate("/");
   };
 
-  const hasLogo = false;
-
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const toggleDetails = () => {
@@ -173,17 +171,6 @@ const DetailDriverPayments = () => {
     <div className="dashboard-container">
       <aside className="dashboard-sidebar">
         <div className="company-header">
-          {hasLogo ? (
-            <img
-              src="https://via.placeholder.com/60"
-              alt="Company Logo"
-              className="company-logo"
-            />
-          ) : (
-            <div className="company-icon">
-              <i className="fa fa-camera" aria-hidden="true"></i>
-            </div>
-          )}
           <h2 className="company-name">Mareeya Bakery Milk Center</h2>
         </div>
         <nav>

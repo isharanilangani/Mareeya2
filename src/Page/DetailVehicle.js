@@ -102,8 +102,6 @@ const DetailVehicle = () => {
     navigate("/");
   };
 
-  const hasLogo = false;
-
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const toggleDetails = () => {
@@ -112,60 +110,49 @@ const DetailVehicle = () => {
 
   return (
     <div className="dashboard-container">
-        <aside className="dashboard-sidebar">
-          <div className="company-header">
-            {hasLogo ? (
-              <img
-                src="https://via.placeholder.com/60"
-                alt="Company Logo"
-                className="company-logo"
-              />
-            ) : (
-              <div className="company-icon">
-                <i className="fa fa-camera" aria-hidden="true"></i>
-              </div>
+      <aside className="dashboard-sidebar">
+        <div className="company-header">
+          <h2 className="company-name">Mareeya Bakery Milk Center</h2>
+        </div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/dashboard">General</Link>
+            </li>
+            <li>
+              <Link to="/settings">Settings</Link>
+            </li>
+            <li onClick={toggleDetails} className="details-toggle">
+              Details
+              <i
+                className={`fa ${
+                  isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"
+                }`}
+                style={{ marginLeft: "10px" }}
+              ></i>
+            </li>
+            {isDetailsOpen && (
+              <ul className="nested-list">
+                <li>
+                  <Link to="/vehicle">Vehicle</Link>
+                </li>
+                <li>
+                  <Link to="/vehicleRepair">Vehicle Repair</Link>
+                </li>
+                <li>
+                  <Link to="/driver">Driver</Link>
+                </li>
+                <li>
+                  <Link to="/driverPayments">Driver Payments</Link>
+                </li>
+              </ul>
             )}
-            <h2 className="company-name">Mareeya Bakery Milk Center</h2>
-          </div>
-          <nav>
-            <ul>
-              <li>
-                <Link to="/dashboard">General</Link>
-              </li>
-              <li>
-                <Link to="/settings">Settings</Link>
-              </li>
-              <li onClick={toggleDetails} className="details-toggle">
-                Details
-                <i
-                  className={`fa ${
-                    isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"
-                  }`}
-                  style={{ marginLeft: "10px" }}
-                ></i>
-              </li>
-              {isDetailsOpen && (
-                <ul className="nested-list">
-                  <li>
-                    <Link to="/vehicle">Vehicle</Link>
-                  </li>
-                  <li>
-                    <Link to="/vehicleRepair">Vehicle Repair</Link>
-                  </li>
-                  <li>
-                    <Link to="/driver">Driver</Link>
-                  </li>
-                  <li>
-                    <Link to="/driverPayments">Driver Payments</Link>
-                  </li>
-                </ul>
-              )}
-            </ul>
-          </nav>
-          <button onClick={handleSignOut} className="sign-out-button">
-            <i className="fa fa-sign-out"></i> Sign Out
-          </button>
-        </aside>
+          </ul>
+        </nav>
+        <button onClick={handleSignOut} className="sign-out-button">
+          <i className="fa fa-sign-out"></i> Sign Out
+        </button>
+      </aside>
 
       <div className="Detail-main">
         <h1 className="Detail-heading">Vehicles</h1>
@@ -281,18 +268,18 @@ const DetailVehicle = () => {
                 <td>{vehicle.status}</td>
                 <td>
                   <div className="action">
-                  <button
-                    className="update-button"
-                    onClick={() => handleUpdate(vehicle)}
-                  >
-                    Update
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={() => openDeleteConfirmation(vehicle)}
-                  >
-                    Delete
-                  </button>
+                    <button
+                      className="update-button"
+                      onClick={() => handleUpdate(vehicle)}
+                    >
+                      Update
+                    </button>
+                    <button
+                      className="delete-button"
+                      onClick={() => openDeleteConfirmation(vehicle)}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </td>
               </tr>
