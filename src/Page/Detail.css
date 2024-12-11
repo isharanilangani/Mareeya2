@@ -23,11 +23,18 @@
   }
   
   /* General Table Styling */
+  .Detail-table-container {
+    max-height: 400px; 
+    overflow-y: auto;  
+    border: 1px solid #ccc; 
+    border-radius: 8px; 
+    margin-top: 20px;
+  }
+  
   .Detail-table {
     font-size: 15px;
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
     background-color: #ffffff;
   }
   

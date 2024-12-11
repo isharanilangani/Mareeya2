@@ -26,14 +26,14 @@ const DetailVehicle = () => {
     fetchVehicles();
   }, []);
 
-    const fetchVehicles = async () => {
-      try {
-        const response = await axios.get("http://localhost:10000/api/vehicle");
-        setVehicles(response.data);
-      } catch (error) {
-        console.error("Error fetching vehicles data", error);
-      }
-    };
+  const fetchVehicles = async () => {
+    try {
+      const response = await axios.get("http://localhost:10000/api/vehicle");
+      setVehicles(response.data);
+    } catch (error) {
+      console.error("Error fetching vehicles data", error);
+    }
+  };
 
   // Handle form submission (add/update vehicle)
   const handleFormSubmit = async (e) => {
@@ -42,12 +42,14 @@ const DetailVehicle = () => {
     if (isEditing) {
       try {
         await axios.post(
-          `http://localhost:10000/api/vehicle`,
+          `http://localhost:10000/api/vehicle/${selectedVehicle.vehicle_number}`,
           newVehicle
         );
         setVehicles((prevVehicles) =>
           prevVehicles.map((vehicle) =>
-            vehicle.id === selectedVehicle.id ? { ...vehicle, ...newVehicle } : vehicle
+            vehicle.id === selectedVehicle.id
+              ? { ...vehicle, ...newVehicle }
+              : vehicle
           )
         );
       } catch (error) {
@@ -55,7 +57,10 @@ const DetailVehicle = () => {
       }
     } else {
       try {
-        const response = await axios.post("http://localhost:10000/api/vehicle", newVehicle);
+        const response = await axios.post(
+          "http://localhost:10000/api/vehicle",
+          newVehicle
+        );
         setVehicles([...vehicles, response.data]);
         fetchVehicles();
       } catch (error) {
@@ -88,8 +93,12 @@ const DetailVehicle = () => {
   // Confirm delete
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:10000/api/vehicle/${vehicleToDelete.id}`);
-      setVehicles(vehicles.filter((vehicle) => vehicle.id !== vehicleToDelete.id));
+      await axios.delete(
+        `http://localhost:10000/api/vehicle/${vehicleToDelete.id}`
+      );
+      setVehicles(
+        vehicles.filter((vehicle) => vehicle.id !== vehicleToDelete.id)
+      );
       setVehicleToDelete(null);
       setShowDeleteConfirmation(false);
     } catch (error) {
@@ -139,7 +148,9 @@ const DetailVehicle = () => {
             <li onClick={toggleDetails} className="details-toggle">
               Details
               <i
-                className={`fa ${isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"}`}
+                className={`fa ${
+                  isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"
+                }`}
                 style={{ marginLeft: "10px" }}
               ></i>
             </li>
@@ -222,7 +233,11 @@ const DetailVehicle = () => {
                 <button type="submit" className="modal-submit-button">
                   {isEditing ? "Update" : "Add"}
                 </button>
-                <button type="button" className="modal-close-button" onClick={resetModal}>
+                <button
+                  type="button"
+                  className="modal-close-button"
+                  onClick={resetModal}
+                >
                   Cancel
                 </button>
               </div>
@@ -239,7 +254,10 @@ const DetailVehicle = () => {
                 <button className="modal-submit-button" onClick={confirmDelete}>
                   Yes
                 </button>
-                <button className="modal-close-button" onClick={() => setShowDeleteConfirmation(false)}>
+                <button
+                  className="modal-close-button"
+                  onClick={() => setShowDeleteConfirmation(false)}
+                >
                   Cancel
                 </button>
               </div>
@@ -247,39 +265,48 @@ const DetailVehicle = () => {
           </div>
         )}
 
-        <table className="Detail-table">
-          <thead>
-            <tr>
-              <th>Vehicle Number</th>
-              <th>Driver Name</th>
-              <th>Vehicle Type</th>
-              <th>Brand</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vehicles.map((vehicle) => (
-              <tr key={vehicle.id}>
-                <td>{vehicle.vehicle_number}</td>
-                <td>{vehicle.driver_name}</td>
-                <td>{vehicle.type}</td>
-                <td>{vehicle.brand}</td>
-                <td>{vehicle.status}</td>
-                <td>
-                  <div className="action">
-                    <button className="update-button" onClick={() => handleUpdate(vehicle)}>
-                      Update
-                    </button>
-                    <button className="delete-button" onClick={() => openDeleteConfirmation(vehicle)}>
-                      Delete
-                    </button>
-                  </div>
-                </td>
+        {/* Add scrollable container for the table */}
+        <div className="Detail-table-container">
+          <table className="Detail-table">
+            <thead>
+              <tr>
+                <th>Vehicle Number</th>
+                <th>Driver Name</th>
+                <th>Vehicle Type</th>
+                <th>Brand</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {vehicles.map((vehicle) => (
+                <tr key={vehicle.id}>
+                  <td>{vehicle.vehicle_number}</td>
+                  <td>{vehicle.driver_name}</td>
+                  <td>{vehicle.type}</td>
+                  <td>{vehicle.brand}</td>
+                  <td>{vehicle.status}</td>
+                  <td>
+                    <div className="action">
+                      <button
+                        className="update-button"
+                        onClick={() => handleUpdate(vehicle)}
+                      >
+                        Update
+                      </button>
+                      <button
+                        className="delete-button"
+                        onClick={() => openDeleteConfirmation(vehicle)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
