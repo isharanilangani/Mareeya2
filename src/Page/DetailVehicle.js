@@ -42,7 +42,7 @@ const DetailVehicle = () => {
     if (isEditing) {
       try {
         await axios.post(
-          `http://localhost:10000/api/vehicle/${selectedVehicle.id}`,
+          `http://localhost:10000/api/vehicle`,
           newVehicle
         );
         setVehicles((prevVehicles) =>
