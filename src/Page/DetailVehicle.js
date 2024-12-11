@@ -28,8 +28,10 @@ const DetailVehicle = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = vehicles.filter((vehicle) =>
-      vehicle.vehicle_number.toLowerCase().includes(searchQuery.toLowerCase())
+    const filtered = vehicles.filter(
+      (vehicle) =>
+        vehicle.vehicle_number &&
+        vehicle.vehicle_number.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredVehicles(filtered);
   }, [searchQuery, vehicles]);
@@ -37,8 +39,11 @@ const DetailVehicle = () => {
   const fetchVehicles = async () => {
     try {
       const response = await axios.get("http://localhost:10000/api/vehicle");
-      setVehicles(response.data);
-      setFilteredVehicles(response.data);
+      const validVehicles = response.data.filter(
+        (vehicle) => vehicle.vehicle_number
+      );
+      setVehicles(validVehicles);
+      setFilteredVehicles(validVehicles);
     } catch (error) {
       console.error("Error fetching vehicles data", error);
     }
@@ -97,9 +102,13 @@ const DetailVehicle = () => {
 
   const confirmDelete = async (vehicle_number) => {
     try {
-      await axios.delete(`http://localhost:10000/api/vehicle/${vehicle_number}`);
+      await axios.delete(
+        `http://localhost:10000/api/vehicle/${vehicle_number}`
+      );
       setVehicles((prevVehicles) =>
-        prevVehicles.filter((vehicle) => vehicle.vehicle_number !== vehicle_number)
+        prevVehicles.filter(
+          (vehicle) => vehicle.vehicle_number !== vehicle_number
+        )
       );
     } catch (error) {
       console.error("Error deleting vehicle", error);
@@ -277,7 +286,7 @@ const DetailVehicle = () => {
           </div>
         )}
 
-<div className="Detail-table-container">
+        <div className="Detail-table-container">
           <table className="Detail-table">
             <thead>
               <tr>
