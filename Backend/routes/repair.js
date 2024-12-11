@@ -64,9 +64,9 @@ router.put("/:vehicle_number", (req, res) => {
 // Get All Repair Records
 router.get("/", (req, res) => {
   const query = `
-    SELECT repairs.*, vehicles.vehicle_number 
-    FROM repairs
-    LEFT JOIN vehicles ON repairs.vehicle_id = vehicles.vehicle_id
+    SELECT expenses.*, vehicles.vehicle_number 
+    FROM expenses
+    LEFT JOIN vehicles ON expenses.vehicle_id = vehicles.vehicle_id
   `;
 
   db.query(query, (err, results) => {
