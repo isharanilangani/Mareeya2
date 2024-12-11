@@ -91,19 +91,20 @@ const DetailVehicle = () => {
   };
 
   // Confirm delete
-  const confirmDelete = async () => {
+  const confirmDelete = async (vehicle_number) => {
     try {
-      await axios.delete(
-        `http://localhost:10000/api/vehicle/${vehicleToDelete.id}`
+      // Send DELETE request to the backend API
+      await axios.delete(`http://localhost:10000/api/vehicle/${vehicle_number}`);
+      
+      // After deletion, remove the vehicle from the state
+      setVehicles((prevVehicles) =>
+        prevVehicles.filter((vehicle) => vehicle.vehicle_number !== vehicle_number)
       );
-      setVehicles(
-        vehicles.filter((vehicle) => vehicle.id !== vehicleToDelete.id)
-      );
-      setVehicleToDelete(null);
-      setShowDeleteConfirmation(false);
     } catch (error) {
       console.error("Error deleting vehicle", error);
     }
+
+    setShowDeleteConfirmation(false);
   };
 
   // Handle sign out
@@ -252,7 +253,10 @@ const DetailVehicle = () => {
               <h2 className="modal-title">Confirm Delete</h2>
               <p>Are you sure you want to delete the vehicle?</p>
               <div className="modal-buttons">
-                <button className="modal-submit-button" onClick={confirmDelete}>
+                <button
+                  className="modal-submit-button"
+                  onClick={() => confirmDelete(vehicleToDelete.vehicle_number)}
+                >
                   Yes
                 </button>
                 <button
