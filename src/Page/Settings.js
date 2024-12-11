@@ -9,7 +9,7 @@ function Settings() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -18,23 +18,16 @@ function Settings() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
-      const response = await axios.put(
-        "http://localhost:10000/api/auth/update",
-        {
-          username,
-          password,
-          userId: "14", 
-        }
-      );
+      await axios.put("http://localhost:10000/api/auth/update", {
+        username,
+        password,
+        userId: "14",
+      });
 
-      setSuccess("Profile updated successfully!");
       setLoading(false);
-
-      // Optionally, navigate after successful update
-      navigate("/dashboard");
+      setIsModalOpen(true); // Open modal on success
     } catch (err) {
       setLoading(false);
       if (err.response) {
@@ -48,6 +41,12 @@ function Settings() {
         setError("An unexpected error occurred.");
       }
     }
+  };
+
+  // Close modal and refresh page
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    window.location.reload();
   };
 
   const handleSignOut = () => {
@@ -133,13 +132,24 @@ function Settings() {
           </div>
 
           {error && <div className="error-message">{error}</div>}
-          {success && <div className="success-message">{success}</div>}
 
           <button type="submit" className="save-button" disabled={loading}>
             {loading ? "Saving..." : "Save Changes"}
           </button>
         </form>
       </main>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <p>Profile updated successfully!</p>
+            <button onClick={handleModalClose} className="save-button">
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
