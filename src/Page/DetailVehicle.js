@@ -7,6 +7,8 @@ import "./Detail.css";
 const DetailVehicle = () => {
   const [vehicles, setVehicles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [filteredVehicles, setFilteredVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -20,6 +22,12 @@ const DetailVehicle = () => {
     brand: "",
     status: "Active",
   });
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1000);
+  };
 
   const navigate = useNavigate();
 
@@ -64,6 +72,7 @@ const DetailVehicle = () => {
               : vehicle
           )
         );
+        showSuccess("Vehicle updated successfully!");
       } catch (error) {
         console.error("Error updating vehicle", error);
       }
@@ -75,6 +84,7 @@ const DetailVehicle = () => {
         );
         setVehicles([...vehicles, response.data]);
         fetchVehicles();
+        showSuccess("Vehicle added successfully!");
       } catch (error) {
         console.error("Error adding new vehicle", error);
       }
@@ -110,6 +120,7 @@ const DetailVehicle = () => {
           (vehicle) => vehicle.vehicle_number !== vehicle_number
         )
       );
+      showSuccess("Vehicle deleted successfully!");
     } catch (error) {
       console.error("Error deleting vehicle", error);
     }
@@ -282,6 +293,15 @@ const DetailVehicle = () => {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <div className="success-modal-overlay">
+            <div className="success-modal-container">
+              <p className="success-message">{successMessage}</p>
             </div>
           </div>
         )}
