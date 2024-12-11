@@ -130,21 +130,60 @@ router.post("/", (req, res) => {
 
     const vehicle_id = vehicleRows[0].vehicle_id;
 
-    const insertRepairQuery =
-      "INSERT INTO expenses (vehicle_id, date, description, amount) VALUES (?, ?, ?, ?)";
-    db.query(
-      insertRepairQuery,
-      [vehicle_id, date, description, amount],
-      (err) => {
-        if (err) {
-          console.error(err);
-          return res
-            .status(500)
-            .json({ message: "Failed to insert repair record." });
-        }
-        res.status(200).json({ message: "Repair record added successfully." });
+    // Check if a repair record exists for the vehicle and date
+    const repairQuery =
+      "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND date = ?";
+    db.query(repairQuery, [vehicle_id, date], (err, repairRows) => {
+      if (err) {
+        console.error(err);
+        return res
+          .status(500)
+          .json({
+            message: "Database error occurred while checking repair records.",
+          });
       }
-    );
+
+      if (repairRows.length > 0) {
+        // Repair record exists, update it
+        const repairId = repairRows[0].expense_id;
+        const updateRepairQuery =
+          "UPDATE expenses SET description = ?, amount = ?, date =? WHERE expense_id = ?";
+        db.query(
+          updateRepairQuery,
+          [description, amount, date, repairId],
+          (err) => {
+            if (err) {
+              console.error(err);
+              return res
+                .status(500)
+                .json({ message: "Failed to update repair record." });
+            }
+            res
+              .status(200)
+              .json({ message: "Repair record updated successfully." });
+          }
+        );
+      } else {
+        // Insert a new repair record
+        const insertRepairQuery =
+          "INSERT INTO expenses (vehicle_id, date, description, amount) VALUES (?, ?, ?, ?)";
+        db.query(
+          insertRepairQuery,
+          [vehicle_id, date, description, amount],
+          (err) => {
+            if (err) {
+              console.error(err);
+              return res
+                .status(500)
+                .json({ message: "Failed to insert repair record." });
+            }
+            res
+              .status(200)
+              .json({ message: "Repair record added successfully." });
+          }
+        );
+      }
+    });
   });
 });
 
