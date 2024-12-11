@@ -6,6 +6,8 @@ import "./Detail.css";
 
 const DetailVehicle = () => {
   const [vehicles, setVehicles] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredVehicles, setFilteredVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -21,24 +23,29 @@ const DetailVehicle = () => {
 
   const navigate = useNavigate();
 
-  // Fetch vehicles data from API
   useEffect(() => {
     fetchVehicles();
   }, []);
+
+  useEffect(() => {
+    const filtered = vehicles.filter((vehicle) =>
+      vehicle.vehicle_number.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredVehicles(filtered);
+  }, [searchQuery, vehicles]);
 
   const fetchVehicles = async () => {
     try {
       const response = await axios.get("http://localhost:10000/api/vehicle");
       setVehicles(response.data);
+      setFilteredVehicles(response.data);
     } catch (error) {
       console.error("Error fetching vehicles data", error);
     }
   };
 
-  // Handle form submission (add/update vehicle)
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
     if (isEditing) {
       try {
         await axios.put(
@@ -67,7 +74,6 @@ const DetailVehicle = () => {
         console.error("Error adding new vehicle", error);
       }
     }
-
     resetModal();
   };
 
@@ -76,7 +82,6 @@ const DetailVehicle = () => {
     setNewVehicle({ ...newVehicle, [name]: value });
   };
 
-  // Reset modal and form state
   const resetModal = () => {
     setNewVehicle({
       vehicle_number: "",
@@ -90,35 +95,27 @@ const DetailVehicle = () => {
     setShowModal(false);
   };
 
-  // Confirm delete
   const confirmDelete = async (vehicle_number) => {
     try {
-      // Send DELETE request to the backend API
       await axios.delete(`http://localhost:10000/api/vehicle/${vehicle_number}`);
-      
-      // After deletion, remove the vehicle from the state
       setVehicles((prevVehicles) =>
         prevVehicles.filter((vehicle) => vehicle.vehicle_number !== vehicle_number)
       );
     } catch (error) {
       console.error("Error deleting vehicle", error);
     }
-
     setShowDeleteConfirmation(false);
   };
 
-  // Handle sign out
   const handleSignOut = () => {
     navigate("/");
   };
 
-  // Toggle details section
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const toggleDetails = () => {
     setIsDetailsOpen((prev) => !prev);
   };
 
-  // Open modal to update vehicle
   const handleUpdate = (vehicle) => {
     setSelectedVehicle(vehicle);
     setNewVehicle(vehicle);
@@ -126,7 +123,6 @@ const DetailVehicle = () => {
     setShowModal(true);
   };
 
-  // Open delete confirmation modal
   const openDeleteConfirmation = (vehicle) => {
     setVehicleToDelete(vehicle);
     setShowDeleteConfirmation(true);
@@ -179,10 +175,21 @@ const DetailVehicle = () => {
       </aside>
 
       <div className="Detail-main">
-        <h1 className="Detail-heading">Vehicles</h1>
-        <button className="add-button" onClick={() => setShowModal(true)}>
-          Add New Vehicle
-        </button>
+        <div className="header-actions">
+          <h1 className="Detail-heading">Vehicles</h1>
+          <div className="header-controls">
+            <button className="add-button" onClick={() => setShowModal(true)}>
+              Add New Vehicle
+            </button>
+            <input
+              type="text"
+              placeholder="Search by Vehicle Number"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-bar"
+            />
+          </div>
+        </div>
 
         {showModal && (
           <div className="modal-overlay">
@@ -270,8 +277,7 @@ const DetailVehicle = () => {
           </div>
         )}
 
-        {/* Add scrollable container for the table */}
-        <div className="Detail-table-container">
+<div className="Detail-table-container">
           <table className="Detail-table">
             <thead>
               <tr>
@@ -284,7 +290,7 @@ const DetailVehicle = () => {
               </tr>
             </thead>
             <tbody>
-              {vehicles.map((vehicle) => (
+              {filteredVehicles.map((vehicle) => (
                 <tr key={vehicle.id}>
                   <td>{vehicle.vehicle_number}</td>
                   <td>{vehicle.driver_name}</td>
