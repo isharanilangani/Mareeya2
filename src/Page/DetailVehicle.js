@@ -1,36 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./Dashboard.css";
 import "./Detail.css";
 
 const DetailVehicle = () => {
-  const [vehicles, setVehicles] = useState([
-    {
-      id: 1,
-      number: "AB123CD",
-      type: "Truck",
-      driver: "John Doe",
-      brand: "Ford",
-      status: "Active",
-    },
-    {
-      id: 2,
-      number: "EF456GH",
-      type: "Van",
-      driver: "Jane Smith",
-      brand: "Mercedes",
-      status: "Inactive",
-    },
-    {
-      id: 3,
-      number: "IJ789KL",
-      type: "Car",
-      driver: "Michael Johnson",
-      brand: "Toyota",
-      status: "Active",
-    },
-  ]);
-
+  const [vehicles, setVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -44,25 +19,53 @@ const DetailVehicle = () => {
     status: "Active",
   });
 
-  const handleFormSubmit = (e) => {
+  const navigate = useNavigate();
+
+  // Fetch vehicles data from API
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const response = await axios.get("http://localhost:10000/api/vehicle");
+        setVehicles(response.data);
+      } catch (error) {
+        console.error("Error fetching vehicles data", error);
+      }
+    };
+
+    fetchVehicles();
+  }, []);
+
+  // Handle form submission (add/update vehicle)
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
 
     if (isEditing) {
-      setVehicles((prevVehicles) =>
-        prevVehicles.map((vehicle) =>
-          vehicle.id === selectedVehicle.id
-            ? { ...selectedVehicle, ...newVehicle }
-            : vehicle
-        )
-      );
+      try {
+        await axios.put(
+          `http://localhost:10000/api/vehicle/${selectedVehicle.id}`,
+          newVehicle
+        );
+        setVehicles((prevVehicles) =>
+          prevVehicles.map((vehicle) =>
+            vehicle.id === selectedVehicle.id ? { ...vehicle, ...newVehicle } : vehicle
+          )
+        );
+      } catch (error) {
+        console.error("Error updating vehicle", error);
+      }
     } else {
-      const newId = vehicles.length ? vehicles[vehicles.length - 1].id + 1 : 1;
-      setVehicles([...vehicles, { id: newId, ...newVehicle }]);
+      try {
+        const response = await axios.post("http://localhost:10000/api/vehicle", newVehicle);
+        setVehicles([...vehicles, response.data]);
+      } catch (error) {
+        console.error("Error adding new vehicle", error);
+      }
     }
 
     resetModal();
   };
 
+  // Reset modal and form state
   const resetModal = () => {
     setNewVehicle({
       number: "",
@@ -76,14 +79,30 @@ const DetailVehicle = () => {
     setShowModal(false);
   };
 
-  const confirmDelete = () => {
-    setVehicles(
-      vehicles.filter((vehicle) => vehicle.id !== vehicleToDelete.id)
-    );
-    setVehicleToDelete(null);
-    setShowDeleteConfirmation(false);
+  // Confirm delete
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:10000/api/vehicle/${vehicleToDelete.id}`);
+      setVehicles(vehicles.filter((vehicle) => vehicle.id !== vehicleToDelete.id));
+      setVehicleToDelete(null);
+      setShowDeleteConfirmation(false);
+    } catch (error) {
+      console.error("Error deleting vehicle", error);
+    }
   };
 
+  // Handle sign out
+  const handleSignOut = () => {
+    navigate("/");
+  };
+
+  // Toggle details section
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const toggleDetails = () => {
+    setIsDetailsOpen((prev) => !prev);
+  };
+
+  // Open modal to update vehicle
   const handleUpdate = (vehicle) => {
     setSelectedVehicle(vehicle);
     setNewVehicle(vehicle);
@@ -91,21 +110,10 @@ const DetailVehicle = () => {
     setShowModal(true);
   };
 
+  // Open delete confirmation modal
   const openDeleteConfirmation = (vehicle) => {
     setVehicleToDelete(vehicle);
     setShowDeleteConfirmation(true);
-  };
-
-  const navigate = useNavigate();
-
-  const handleSignOut = () => {
-    navigate("/");
-  };
-
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
-  const toggleDetails = () => {
-    setIsDetailsOpen((prev) => !prev);
   };
 
   return (
@@ -125,9 +133,7 @@ const DetailVehicle = () => {
             <li onClick={toggleDetails} className="details-toggle">
               Details
               <i
-                className={`fa ${
-                  isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"
-                }`}
+                className={`fa ${isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"}`}
                 style={{ marginLeft: "10px" }}
               ></i>
             </li>
@@ -170,43 +176,33 @@ const DetailVehicle = () => {
                 type="text"
                 placeholder="Vehicle Number"
                 value={newVehicle.number}
-                onChange={(e) =>
-                  setNewVehicle({ ...newVehicle, number: e.target.value })
-                }
+                onChange={(e) => setNewVehicle({ ...newVehicle, number: e.target.value })}
                 required
               />
               <input
                 type="text"
                 placeholder="Driver Name"
                 value={newVehicle.driver}
-                onChange={(e) =>
-                  setNewVehicle({ ...newVehicle, driver: e.target.value })
-                }
+                onChange={(e) => setNewVehicle({ ...newVehicle, driver: e.target.value })}
                 required
               />
               <input
                 type="text"
                 placeholder="Vehicle Type"
                 value={newVehicle.type}
-                onChange={(e) =>
-                  setNewVehicle({ ...newVehicle, type: e.target.value })
-                }
+                onChange={(e) => setNewVehicle({ ...newVehicle, type: e.target.value })}
                 required
               />
               <input
                 type="text"
                 placeholder="Brand"
                 value={newVehicle.brand}
-                onChange={(e) =>
-                  setNewVehicle({ ...newVehicle, brand: e.target.value })
-                }
+                onChange={(e) => setNewVehicle({ ...newVehicle, brand: e.target.value })}
                 required
               />
               <select
                 value={newVehicle.status}
-                onChange={(e) =>
-                  setNewVehicle({ ...newVehicle, status: e.target.value })
-                }
+                onChange={(e) => setNewVehicle({ ...newVehicle, status: e.target.value })}
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
@@ -215,11 +211,7 @@ const DetailVehicle = () => {
                 <button type="submit" className="modal-submit-button">
                   {isEditing ? "Update" : "Add"}
                 </button>
-                <button
-                  type="button"
-                  className="modal-close-button"
-                  onClick={resetModal}
-                >
+                <button type="button" className="modal-close-button" onClick={resetModal}>
                   Cancel
                 </button>
               </div>
@@ -236,10 +228,7 @@ const DetailVehicle = () => {
                 <button className="modal-submit-button" onClick={confirmDelete}>
                   Yes
                 </button>
-                <button
-                  className="modal-close-button"
-                  onClick={() => setShowDeleteConfirmation(false)}
-                >
+                <button className="modal-close-button" onClick={() => setShowDeleteConfirmation(false)}>
                   Cancel
                 </button>
               </div>
@@ -261,23 +250,17 @@ const DetailVehicle = () => {
           <tbody>
             {vehicles.map((vehicle) => (
               <tr key={vehicle.id}>
-                <td>{vehicle.number}</td>
-                <td>{vehicle.driver}</td>
+                <td>{vehicle.vehicle_number}</td>
+                <td>{vehicle.driver_name}</td>
                 <td>{vehicle.type}</td>
                 <td>{vehicle.brand}</td>
                 <td>{vehicle.status}</td>
                 <td>
                   <div className="action">
-                    <button
-                      className="update-button"
-                      onClick={() => handleUpdate(vehicle)}
-                    >
+                    <button className="update-button" onClick={() => handleUpdate(vehicle)}>
                       Update
                     </button>
-                    <button
-                      className="delete-button"
-                      onClick={() => openDeleteConfirmation(vehicle)}
-                    >
+                    <button className="delete-button" onClick={() => openDeleteConfirmation(vehicle)}>
                       Delete
                     </button>
                   </div>
