@@ -215,4 +215,35 @@ router.post("/", (req, res) => {
   });
 });
 
+// DELETE API to remove a vehicle by vehicle_number
+router.delete("/:vehicle_number", (req, res) => {
+  const { vehicle_number } = req.params;
+
+  if (!vehicle_number) {
+    return res.status(400).json({ message: "Vehicle number is required." });
+  }
+
+  // First, delete the driver associated with the vehicle (if necessary)
+  const deleteDriverQuery =
+    "DELETE FROM drivers WHERE vehicle_id = (SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?)";
+  db.query(deleteDriverQuery, [vehicle_number], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to delete driver." });
+    }
+
+    // After deleting the driver, delete the vehicle from the vehicles table
+    const deleteVehicleQuery =
+      "DELETE FROM vehicles WHERE vehicle_number = ?";
+    db.query(deleteVehicleQuery, [vehicle_number], (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Failed to delete vehicle." });
+      }
+
+      res.status(200).json({ message: "Vehicle and associated driver deleted successfully." });
+    });
+  });
+});
+
 module.exports = router;
