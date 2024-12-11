@@ -188,23 +188,52 @@ router.post("/", (req, res) => {
 });
 
 // Delete a Repair Record by ID
-router.delete("/:repair_id", (req, res) => {
-  const { repair_id } = req.params;
+router.delete("/:vehicle_number/:date", (req, res) => {
+  const { vehicle_number, date } = req.params;
 
-  if (!repair_id) {
-    return res.status(400).json({ message: "Repair ID is required." });
+  if (!vehicle_number || !date) {
+    return res.status(400).json({ message: "Vehicle number and date are required." });
   }
 
-  const deleteRepairQuery = "DELETE FROM repairs WHERE repair_id = ?";
-  db.query(deleteRepairQuery, [repair_id], (err) => {
+  // Fetch vehicle_id from vehicle_number
+  const vehicleQuery = "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
+  db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
     if (err) {
       console.error(err);
-      return res
-        .status(500)
-        .json({ message: "Failed to delete repair record." });
+      return res.status(500).json({ message: "Database error occurred while fetching vehicle." });
     }
 
-    res.status(200).json({ message: "Repair record deleted successfully." });
+    if (vehicleRows.length === 0) {
+      return res.status(404).json({ message: "Vehicle not found." });
+    }
+
+    const vehicle_id = vehicleRows[0].vehicle_id;
+
+    // Check if a repair record exists for the vehicle and date
+    const repairQuery = "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND date = ?";
+    db.query(repairQuery, [vehicle_id, date], (err, repairRows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database error occurred while fetching repair record." });
+      }
+
+      if (repairRows.length === 0) {
+        return res.status(404).json({ message: "Repair record not found." });
+      }
+
+      const expense_id = repairRows[0].expense_id;
+
+      // Delete the repair record
+      const deleteRepairQuery = "DELETE FROM expenses WHERE expense_id = ?";
+      db.query(deleteRepairQuery, [expense_id], (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Failed to delete repair record." });
+        }
+
+        res.status(200).json({ message: "Repair record deleted successfully." });
+      });
+    });
   });
 });
 
