@@ -41,7 +41,7 @@ const DetailVehicle = () => {
 
     if (isEditing) {
       try {
-        await axios.put(
+        await axios.post(
           `http://localhost:10000/api/vehicle/${selectedVehicle.id}`,
           newVehicle
         );
@@ -175,14 +175,14 @@ const DetailVehicle = () => {
               <input
                 type="text"
                 placeholder="Vehicle Number"
-                value={newVehicle.number}
+                value={newVehicle.vehicle_number}
                 onChange={(e) => setNewVehicle({ ...newVehicle, number: e.target.value })}
                 required
               />
               <input
                 type="text"
                 placeholder="Driver Name"
-                value={newVehicle.driver}
+                value={newVehicle.driver_name}
                 onChange={(e) => setNewVehicle({ ...newVehicle, driver: e.target.value })}
                 required
               />
