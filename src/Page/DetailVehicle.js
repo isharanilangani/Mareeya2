@@ -41,13 +41,13 @@ const DetailVehicle = () => {
 
     if (isEditing) {
       try {
-        await axios.post(
+        await axios.put(
           `http://localhost:10000/api/vehicle/${selectedVehicle.vehicle_number}`,
           newVehicle
         );
         setVehicles((prevVehicles) =>
           prevVehicles.map((vehicle) =>
-            vehicle.id === selectedVehicle.id
+            vehicle.vehicle_number === selectedVehicle.vehicle_number
               ? { ...vehicle, ...newVehicle }
               : vehicle
           )
@@ -196,6 +196,7 @@ const DetailVehicle = () => {
                 value={newVehicle.vehicle_number}
                 onChange={handleInputChange}
                 required
+                readOnly={isEditing}
               />
               <input
                 type="text"
