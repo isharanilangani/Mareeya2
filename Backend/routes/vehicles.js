@@ -4,15 +4,15 @@ const router = express.Router();
 
 // Register or Update Vehicle and Driver
 router.post("/", (req, res) => {
-  const { vehicleNumber, driverName, type, brand, status } = req.body;
+  const { vehicle_number, driver_name, type, brand, status } = req.body;
 
-  if (!vehicleNumber || !type || !brand || !status || !driverName) {
+  if (!vehicle_number || !type || !brand || !status || !driver_name) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
   // Check if the vehicle already exists
   const vehicleQuery = "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
-  db.query(vehicleQuery, [vehicleNumber], (err, vehicleRows) => {
+  db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: "Database error occurred." });
@@ -38,7 +38,7 @@ router.post("/", (req, res) => {
         "INSERT INTO vehicles (vehicle_number, type, brand, status) VALUES (?, ?, ?, ?)";
       db.query(
         insertVehicleQuery,
-        [vehicleNumber, type, brand, status],
+        [vehicle_number, type, brand, status],
         (err, result) => {
           if (err) {
             console.error(err);
@@ -65,7 +65,7 @@ router.post("/", (req, res) => {
           // Update existing driver name
           const updateDriverQuery =
             "UPDATE drivers SET name = ? WHERE vehicle_id = ?";
-          db.query(updateDriverQuery, [driverName, vehicleId], (err) => {
+          db.query(updateDriverQuery, [driver_name, vehicleId], (err) => {
             if (err) {
               console.error(err);
               return res
@@ -81,7 +81,7 @@ router.post("/", (req, res) => {
           // Insert a new driver
           const insertDriverQuery =
             "INSERT INTO drivers (name, vehicle_id) VALUES (?, ?)";
-          db.query(insertDriverQuery, [driverName, vehicleId], (err) => {
+          db.query(insertDriverQuery, [driver_name, vehicleId], (err) => {
             if (err) {
               console.error(err);
               return res

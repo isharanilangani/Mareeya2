@@ -12,9 +12,9 @@ const DetailVehicle = () => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [vehicleToDelete, setVehicleToDelete] = useState(null);
   const [newVehicle, setNewVehicle] = useState({
-    number: "",
+    vehicle_number: "",
     type: "",
-    driver: "",
+    driver_name: "",
     brand: "",
     status: "Active",
   });
@@ -23,6 +23,9 @@ const DetailVehicle = () => {
 
   // Fetch vehicles data from API
   useEffect(() => {
+    fetchVehicles();
+  }, []);
+
     const fetchVehicles = async () => {
       try {
         const response = await axios.get("http://localhost:10000/api/vehicle");
@@ -31,9 +34,6 @@ const DetailVehicle = () => {
         console.error("Error fetching vehicles data", error);
       }
     };
-
-    fetchVehicles();
-  }, []);
 
   // Handle form submission (add/update vehicle)
   const handleFormSubmit = async (e) => {
@@ -57,6 +57,7 @@ const DetailVehicle = () => {
       try {
         const response = await axios.post("http://localhost:10000/api/vehicle", newVehicle);
         setVehicles([...vehicles, response.data]);
+        fetchVehicles();
       } catch (error) {
         console.error("Error adding new vehicle", error);
       }
@@ -65,12 +66,17 @@ const DetailVehicle = () => {
     resetModal();
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewVehicle({ ...newVehicle, [name]: value });
+  };
+
   // Reset modal and form state
   const resetModal = () => {
     setNewVehicle({
-      number: "",
+      vehicle_number: "",
       type: "",
-      driver: "",
+      driver_name: "",
       brand: "",
       status: "Active",
     });
@@ -174,35 +180,40 @@ const DetailVehicle = () => {
               </h2>
               <input
                 type="text"
+                name="vehicle_number"
                 placeholder="Vehicle Number"
                 value={newVehicle.vehicle_number}
-                onChange={(e) => setNewVehicle({ ...newVehicle, number: e.target.value })}
+                onChange={handleInputChange}
                 required
               />
               <input
                 type="text"
+                name="driver_name"
                 placeholder="Driver Name"
                 value={newVehicle.driver_name}
-                onChange={(e) => setNewVehicle({ ...newVehicle, driver: e.target.value })}
+                onChange={handleInputChange}
                 required
               />
               <input
                 type="text"
+                name="type"
                 placeholder="Vehicle Type"
                 value={newVehicle.type}
-                onChange={(e) => setNewVehicle({ ...newVehicle, type: e.target.value })}
+                onChange={handleInputChange}
                 required
               />
               <input
                 type="text"
+                name="brand"
                 placeholder="Brand"
                 value={newVehicle.brand}
-                onChange={(e) => setNewVehicle({ ...newVehicle, brand: e.target.value })}
+                onChange={handleInputChange}
                 required
               />
               <select
+                name="status"
                 value={newVehicle.status}
-                onChange={(e) => setNewVehicle({ ...newVehicle, status: e.target.value })}
+                onChange={handleInputChange}
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
