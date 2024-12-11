@@ -98,4 +98,24 @@ router.post("/", (req, res) => {
   });
 });
 
+
+// API to get all vehicles
+router.get("/", (req, res) => {
+  const query = `
+    SELECT vehicles.*, drivers.name AS driver_name
+    FROM vehicles
+    LEFT JOIN drivers ON vehicles.vehicle_id = drivers.vehicle_id
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching vehicles and driver names:", err);
+      res.status(500).send("Error fetching vehicles and driver names.");
+      return;
+    }
+
+    res.json(results);
+  });
+});
+
 module.exports = router;
