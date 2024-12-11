@@ -13,11 +13,14 @@ router.put("/:vehicle_number", (req, res) => {
   }
 
   // Fetch vehicle_id from vehicle_number
-  const vehicleQuery = "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
+  const vehicleQuery =
+    "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
   db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: "Database error occurred while fetching vehicle." });
+      return res
+        .status(500)
+        .json({ message: "Database error occurred while fetching vehicle." });
     }
 
     if (vehicleRows.length === 0) {
@@ -27,35 +30,57 @@ router.put("/:vehicle_number", (req, res) => {
     const vehicle_id = vehicleRows[0].vehicle_id;
 
     // Check if a repair record exists for the vehicle and date
-    const repairQuery = "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND date = ?";
+    const repairQuery =
+      "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND date = ?";
     db.query(repairQuery, [vehicle_id, date], (err, repairRows) => {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: "Database error occurred while checking repair records." });
+        return res
+          .status(500)
+          .json({
+            message: "Database error occurred while checking repair records.",
+          });
       }
 
       if (repairRows.length > 0) {
         // Repair record exists, update it
         const repairId = repairRows[0].expense_id;
-        const updateRepairQuery = "UPDATE expenses SET description = ?, amount = ?, date =? WHERE expense_id = ?";
-        db.query(updateRepairQuery, [description, amount, date, repairId], (err) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Failed to update repair record." });
+        const updateRepairQuery =
+          "UPDATE expenses SET description = ?, amount = ?, date =? WHERE expense_id = ?";
+        db.query(
+          updateRepairQuery,
+          [description, amount, date, repairId],
+          (err) => {
+            if (err) {
+              console.error(err);
+              return res
+                .status(500)
+                .json({ message: "Failed to update repair record." });
+            }
+            res
+              .status(200)
+              .json({ message: "Repair record updated successfully." });
           }
-          res.status(200).json({ message: "Repair record updated successfully." });
-        });
+        );
       } else {
         // Insert a new repair record
         const insertRepairQuery =
           "INSERT INTO expenses (vehicle_id, date, description, amount) VALUES (?, ?, ?, ?)";
-        db.query(insertRepairQuery, [vehicle_id, date, description, amount], (err) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Failed to insert repair record." });
+        db.query(
+          insertRepairQuery,
+          [vehicle_id, date, description, amount],
+          (err) => {
+            if (err) {
+              console.error(err);
+              return res
+                .status(500)
+                .json({ message: "Failed to insert repair record." });
+            }
+            res
+              .status(200)
+              .json({ message: "Repair record added successfully." });
           }
-          res.status(200).json({ message: "Repair record added successfully." });
-        });
+        );
       }
     });
   });
@@ -82,20 +107,44 @@ router.get("/", (req, res) => {
 
 // Add a New Repair Record
 router.post("/", (req, res) => {
-  const { vehicle_id, date, description, amount } = req.body;
+  const { vehicle_number, date, description, amount } = req.body;
 
-  if (!vehicle_id || !date || !description || !amount) {
+  if (!vehicle_number || !date || !description || !amount) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
-  const insertRepairQuery =
-    "INSERT INTO repairs (vehicle_id, date, description, amount) VALUES (?, ?, ?, ?)";
-  db.query(insertRepairQuery, [vehicle_id, date, description, amount], (err) => {
+  // Fetch vehicle_id from vehicle_number
+  const vehicleQuery =
+    "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
+  db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: "Failed to insert repair record." });
+      return res
+        .status(500)
+        .json({ message: "Database error occurred while fetching vehicle." });
     }
-    res.status(200).json({ message: "Repair record added successfully." });
+
+    if (vehicleRows.length === 0) {
+      return res.status(404).json({ message: "Vehicle not found." });
+    }
+
+    const vehicle_id = vehicleRows[0].vehicle_id;
+
+    const insertRepairQuery =
+      "INSERT INTO expenses (vehicle_id, date, description, amount) VALUES (?, ?, ?, ?)";
+    db.query(
+      insertRepairQuery,
+      [vehicle_id, date, description, amount],
+      (err) => {
+        if (err) {
+          console.error(err);
+          return res
+            .status(500)
+            .json({ message: "Failed to insert repair record." });
+        }
+        res.status(200).json({ message: "Repair record added successfully." });
+      }
+    );
   });
 });
 
@@ -111,7 +160,9 @@ router.delete("/:repair_id", (req, res) => {
   db.query(deleteRepairQuery, [repair_id], (err) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: "Failed to delete repair record." });
+      return res
+        .status(500)
+        .json({ message: "Failed to delete repair record." });
     }
 
     res.status(200).json({ message: "Repair record deleted successfully." });
