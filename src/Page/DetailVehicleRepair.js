@@ -1,33 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios"; // Import axios
 import "./Dashboard.css";
 import "./Detail.css";
 
 const DetailVehicleRepair = () => {
-  const [repairs, setRepairs] = useState([
-    {
-      id: 1,
-      vehicleNumber: "AB123CD",
-      repairDate: "2023-12-01",
-      repairDetails: "Engine repair",
-      cost: 500,
-    },
-    {
-      id: 2,
-      vehicleNumber: "EF456GH",
-      repairDate: "2023-11-20",
-      repairDetails: "Brake system repair",
-      cost: 300,
-    },
-    {
-      id: 3,
-      vehicleNumber: "IJ789KL",
-      repairDate: "2023-10-15",
-      repairDetails: "Tire replacement",
-      cost: 200,
-    },
-  ]);
-
+  const [repairs, setRepairs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -40,6 +18,21 @@ const DetailVehicleRepair = () => {
     costAmount: "0", // Numeric part of the cost
     costCents: "00", // Cents part of the cost
   });
+
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch repair records from the API
+    axios
+      .get("http://localhost:10000/api/vehicle/repair") // Replace with your actual API URL
+      .then((response) => {
+        setRepairs(response.data); // Set repairs state with the fetched data
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the repair records:", error);
+      });
+  }, []);
 
   // Function to handle numeric part of the cost input change
   const handleAmountChange = (e) => {
@@ -73,20 +66,36 @@ const DetailVehicleRepair = () => {
 
     if (isEditing) {
       // Update repair details
-      setRepairs((prevRepairs) =>
-        prevRepairs.map((repair) =>
-          repair.id === selectedRepair.id
-            ? { ...selectedRepair, ...repairData }
-            : repair
-        )
-      );
+      axios
+        .put(
+          'http://localhost:10000/api/vehicle/repair/${selectedRepair.vehicle_number}',
+          repairData
+        ) // Replace with your API URL
+        .then(() => {
+          setRepairs((prevRepairs) =>
+            prevRepairs.map((repair) =>
+              repair.id === selectedRepair.id
+                ? { ...selectedRepair, ...repairData }
+                : repair
+            )
+          );
+          resetModal();
+        })
+        .catch((error) => {
+          console.error("Error updating repair:", error);
+        });
     } else {
       // Add new repair
-      const newId = repairs.length ? repairs[repairs.length - 1].id + 1 : 1;
-      setRepairs([...repairs, { id: newId, ...repairData }]);
+      axios
+        .post("http://your-backend-url/api/repairs", repairData) // Replace with your API URL
+        .then((response) => {
+          setRepairs([...repairs, { id: response.data.id, ...repairData }]);
+          resetModal();
+        })
+        .catch((error) => {
+          console.error("Error adding new repair:", error);
+        });
     }
-
-    resetModal();
   };
 
   const resetModal = () => {
@@ -103,9 +112,16 @@ const DetailVehicleRepair = () => {
   };
 
   const confirmDelete = () => {
-    setRepairs(repairs.filter((repair) => repair.id !== repairToDelete.id));
-    setRepairToDelete(null);
-    setShowDeleteConfirmation(false);
+    axios
+      .delete(`http://your-backend-url/api/repairs/${repairToDelete.id}`) // Replace with your API URL
+      .then(() => {
+        setRepairs(repairs.filter((repair) => repair.id !== repairToDelete.id));
+        setRepairToDelete(null);
+        setShowDeleteConfirmation(false);
+      })
+      .catch((error) => {
+        console.error("Error deleting repair:", error);
+      });
   };
 
   const handleUpdate = (repair) => {
@@ -127,13 +143,9 @@ const DetailVehicleRepair = () => {
     setShowDeleteConfirmation(true);
   };
 
-  const navigate = useNavigate();
-
   const handleSignOut = () => {
     navigate("/");
   };
-
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const toggleDetails = () => {
     setIsDetailsOpen((prev) => !prev);
@@ -306,26 +318,27 @@ const DetailVehicleRepair = () => {
           <tbody>
             {repairs.map((repair) => (
               <tr key={repair.id}>
-                <td>{repair.vehicleNumber}</td>
-                <td>{repair.repairDate}</td>
-                <td>{repair.repairDetails}</td>
-                <td>{`Rs. ${repair.cost.toFixed(2)}`}</td>{" "}
-                {/* Format the cost */}
+                <td>{repair.vehicle_number}</td>
+                <td>{repair.date}</td>
+                <td>{repair.description}</td>
                 <td>
-                  <div className="action">
-                    <button
-                      className="update-button"
-                      onClick={() => handleUpdate(repair)}
-                    >
-                      Update
-                    </button>
-                    <button
-                      className="delete-button"
-                      onClick={() => openDeleteConfirmation(repair)}
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {repair.amount && !isNaN(repair.amount)
+                    ? repair.amount.toFixed(2)
+                    : "0.00"}
+                </td>
+                <td>
+                  <button
+                    className="update-button"
+                    onClick={() => handleUpdate(repair)}
+                  >
+                    Update
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={() => openDeleteConfirmation(repair)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
