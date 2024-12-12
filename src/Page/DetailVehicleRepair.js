@@ -72,24 +72,26 @@ const DetailVehicleRepair = () => {
   };
 
   // Function to handle the form submission
+  // Function to handle the form submission
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
     // Combine the costAmount and costCents to form the full cost
     const fullCost =
-      parseInt(newRepair.costAmount) + parseInt(newRepair.costCents) / 100;
+      parseInt(newRepair.costAmount || "0", 10) +
+      parseInt(newRepair.costCents || "0", 10) / 100;
 
     const repairData = {
-      vehicleNumber: newRepair.vehicleNumber,
-      repairDate: newRepair.repairDate,
-      repairDetails: newRepair.repairDetails,
-      cost: fullCost,
+      vehicle_number: newRepair.vehicleNumber, // Backend expects `vehicle_number`
+      date: newRepair.repairDate, // Backend expects `date`
+      description: newRepair.repairDetails, // Backend expects `description`
+      amount: fullCost, // Backend expects `amount`
     };
 
     if (isEditing) {
-      // Update repair details
+      // Update repair details (you might need an endpoint for this)
       axios
-        .put("http://localhost:10000/api/vehicle/repair", repairData) // Replace with your API URL
+        .put("http://localhost:10000/api/vehicle/repair", repairData) // Replace with your update API
         .then(() => {
           setRepairs((prevRepairs) =>
             prevRepairs.map((repair) =>
@@ -106,7 +108,7 @@ const DetailVehicleRepair = () => {
     } else {
       // Add new repair
       axios
-        .post("http://localhost:10000/api/repairs", repairData)
+        .post("http://localhost:10000/api/vehicle/repair", repairData)
         .then((response) => {
           setRepairs([...repairs, { id: response.data.id, ...repairData }]);
           resetModal();
@@ -122,8 +124,8 @@ const DetailVehicleRepair = () => {
       vehicleNumber: "",
       repairDate: "",
       repairDetails: "",
-      costAmount: "0", // Default cost is 0
-      costCents: "00", // Default cents is 00
+      costAmount: "0", 
+      costCents: "00", 
     });
     setSelectedRepair(null);
     setIsEditing(false);
