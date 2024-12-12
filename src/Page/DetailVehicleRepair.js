@@ -12,6 +12,7 @@ const DetailVehicleRepair = () => {
   const [currentRepairId, setCurrentRepairId] = useState(null);
   const [vehicleFetchError, setVehicleFetchError] = useState(null);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
+  const [selectedRepair, setSelectedRepair] = useState(null);
   const [newRepair, setNewRepair] = useState({
     vehicleNumber: "",
     repairDate: "",
@@ -93,22 +94,24 @@ const DetailVehicleRepair = () => {
 
     try {
       if (isEditing) {
-        try{
-        // Update repair
-        await axios.put(
-          `http://localhost:10000/api/vehicle/repair/${repairs.vehicle_number}`,
-          repairData
-        );
-        setRepairs((prevRepairs) =>
-          prevRepairs.map((repair) =>
-            repair.vehicle_number === repairs.vehicle_number
-              ? { ...repair, ...newRepair }
-              : repair
-          )
-        );
-      } catch (error) {
-        console.error("Error updating vehicle", error);
-      }
+        try {
+          // Update repair
+          console.log('Sending data:', newRepair);
+          await axios.put(
+            `http://localhost:10000/api/vehicle/repair/${selectedRepair.vehicle_number}`,
+            repairData
+          );
+
+          setRepairs((prevRepairs) =>
+            prevRepairs.map((repair) =>
+              repair.vehicle_number === selectedRepair.vehicle_number
+                ? { ...repair, ...newRepair }
+                : repair
+            )
+          );
+        } catch (error) {
+          console.error("Error updating vehicle", error);
+        }
       } else {
         // Add new repair
         const response = await axios.post(
@@ -124,19 +127,16 @@ const DetailVehicleRepair = () => {
   };
 
   const handleUpdate = (repair) => {
-    setCurrentRepairId(repair.id);
+    setSelectedRepair(repair); // Set the selected repair
     setNewRepair({
       vehicleNumber: repair.vehicle_number,
-      repairDate: repair.date,
+      repairDate: repair.date, // Ensure the date is formatted correctly
       repairDetails: repair.description,
-      costAmount: repair.amount.toString().split(".")[0] || "0",
-      costCents: (repair.amount.toString().split(".")[1] || "00").padEnd(
-        2,
-        "0"
-      ),
+      costAmount: Math.floor(repair.amount), // Extract the whole number part
+      costCents: ((repair.amount % 1) * 100).toFixed(0).padStart(2, "0"), // Extract the cents part
     });
-    setIsEditing(true);
-    setShowModal(true);
+    setIsEditing(true); // Enable editing mode
+    setShowModal(true); // Show the modal
   };
 
   // Reset modal state
