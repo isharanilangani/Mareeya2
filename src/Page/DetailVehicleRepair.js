@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import "./Dashboard.css";
 import "./Detail.css";
 
@@ -11,23 +11,45 @@ const DetailVehicleRepair = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedRepair, setSelectedRepair] = useState(null);
   const [repairToDelete, setRepairToDelete] = useState(null);
+  const [vehicleFetchError, setVehicleFetchError] = useState(null);
+  const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
+
   const [newRepair, setNewRepair] = useState({
     vehicleNumber: "",
     repairDate: "",
     repairDetails: "",
-    costAmount: "0", // Numeric part of the cost
-    costCents: "00", // Cents part of the cost
+    costAmount: "0",
+    costCents: "00",
   });
 
+  const [vehicleNumbers, setVehicleNumbers] = useState([]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch vehicle numbers on component mount
+  const handleVehicleDropdownClick = async () => {
+    setIsLoadingVehicles(true);
+    setVehicleFetchError(null);
+
+    try {
+      const response = await axios.get(
+        "http://localhost:10000/api/vehicle/numbers"
+      );
+      setVehicleNumbers(response.data.map((v) => v.vehicle_number));
+    } catch (error) {
+      setVehicleFetchError("Failed to fetch vehicle numbers.");
+      console.error("Error fetching vehicle numbers:", error);
+    } finally {
+      setIsLoadingVehicles(false);
+    }
+  };
+
+  // Fetch repair records on component mount
   useEffect(() => {
-    // Fetch repair records from the API
     axios
-      .get("http://localhost:10000/api/vehicle/repair") // Replace with your actual API URL
+      .get("http://localhost:10000/api/vehicle/repair")
       .then((response) => {
-        setRepairs(response.data); // Set repairs state with the fetched data
+        setRepairs(response.data);
       })
       .catch((error) => {
         console.error("There was an error fetching the repair records:", error);
@@ -36,15 +58,15 @@ const DetailVehicleRepair = () => {
 
   // Function to handle numeric part of the cost input change
   const handleAmountChange = (e) => {
-    let value = e.target.value.replace(/[^0-9]/g, ""); // Remove non-numeric characters
+    let value = e.target.value.replace(/[^0-9]/g, "");
     setNewRepair({ ...newRepair, costAmount: value });
   };
 
   // Function to handle cents part of the cost input change
   const handleCentsChange = (e) => {
-    let value = e.target.value.replace(/[^0-9]/g, ""); // Remove non-numeric characters
+    let value = e.target.value.replace(/[^0-9]/g, "");
     if (value.length > 2) {
-      value = value.substring(0, 2); // Limit cents to two digits
+      value = value.substring(0, 2);
     }
     setNewRepair({ ...newRepair, costCents: value });
   };
@@ -67,10 +89,7 @@ const DetailVehicleRepair = () => {
     if (isEditing) {
       // Update repair details
       axios
-        .put(
-          'http://localhost:10000/api/vehicle/repair/${selectedRepair.vehicle_number}',
-          repairData
-        ) // Replace with your API URL
+        .put("http://localhost:10000/api/vehicle/repair", repairData) // Replace with your API URL
         .then(() => {
           setRepairs((prevRepairs) =>
             prevRepairs.map((repair) =>
@@ -87,7 +106,7 @@ const DetailVehicleRepair = () => {
     } else {
       // Add new repair
       axios
-        .post("http://your-backend-url/api/repairs", repairData) // Replace with your API URL
+        .post("http://localhost:10000/api/repairs", repairData)
         .then((response) => {
           setRepairs([...repairs, { id: response.data.id, ...repairData }]);
           resetModal();
@@ -151,11 +170,6 @@ const DetailVehicleRepair = () => {
     setIsDetailsOpen((prev) => !prev);
   };
 
-  // Get unique vehicle numbers from the repairs state
-  const vehicleNumbers = [
-    ...new Set(repairs.map((repair) => repair.vehicleNumber)),
-  ];
-
   return (
     <div className="dashboard-container">
       <aside className="dashboard-sidebar">
@@ -218,17 +232,24 @@ const DetailVehicleRepair = () => {
               {/* Vehicle Number Dropdown */}
               <select
                 value={newRepair.vehicleNumber}
+                onClick={handleVehicleDropdownClick}
                 onChange={(e) =>
                   setNewRepair({ ...newRepair, vehicleNumber: e.target.value })
                 }
                 required
               >
                 <option value="">Select Vehicle Number</option>
-                {vehicleNumbers.map((vehicleNumber) => (
-                  <option key={vehicleNumber} value={vehicleNumber}>
-                    {vehicleNumber}
-                  </option>
-                ))}
+                {isLoadingVehicles && <option>Loading...</option>}
+                {vehicleFetchError && (
+                  <option disabled>{vehicleFetchError}</option>
+                )}
+                {!isLoadingVehicles &&
+                  !vehicleFetchError &&
+                  vehicleNumbers.map((number) => (
+                    <option key={number} value={number}>
+                      {number}
+                    </option>
+                  ))}
               </select>
 
               <input

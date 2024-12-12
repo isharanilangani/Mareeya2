@@ -246,4 +246,22 @@ router.delete("/:vehicle_number", (req, res) => {
   });
 });
 
+// API to get all vehicles numbers
+router.get("/numbers", (req, res) => {
+  const query = `
+    SELECT vehicle_number
+    FROM vehicles
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching vehicles and driver names:", err);
+      res.status(500).send("Error fetching vehicles and driver names.");
+      return;
+    }
+
+    res.json(results);
+  });
+});
+
 module.exports = router;
