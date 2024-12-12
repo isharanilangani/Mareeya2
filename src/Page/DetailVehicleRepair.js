@@ -6,6 +6,7 @@ import "./Detail.css";
 
 const DetailVehicleRepair = () => {
   const [repairs, setRepairs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -56,6 +57,16 @@ const DetailVehicleRepair = () => {
       });
   }, []);
 
+  // Handle the search query change
+  const handleSearchQueryChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Filter repairs based on search query
+  const filteredRepairs = repairs.filter((repair) =>
+    repair.vehicle_number.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Function to handle numeric part of the cost input change
   const handleAmountChange = (e) => {
     let value = e.target.value.replace(/[^0-9]/g, "");
@@ -72,7 +83,6 @@ const DetailVehicleRepair = () => {
   };
 
   // Function to handle the form submission
-  // Function to handle the form submission
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
@@ -81,21 +91,24 @@ const DetailVehicleRepair = () => {
       parseInt(newRepair.costAmount || "0", 10) +
       parseInt(newRepair.costCents || "0", 10) / 100;
 
+    // Ensure fullCost is a number
     const repairData = {
-      vehicle_number: newRepair.vehicleNumber, // Backend expects `vehicle_number`
-      date: newRepair.repairDate, // Backend expects `date`
-      description: newRepair.repairDetails, // Backend expects `description`
-      amount: fullCost, // Backend expects `amount`
+      vehicle_number: newRepair.vehicleNumber,
+      date: newRepair.repairDate,
+      description: newRepair.repairDetails,
+      amount: isNaN(fullCost) ? 0 : fullCost, // fallback to 0 if fullCost is NaN
     };
-
     if (isEditing) {
       // Update repair details (you might need an endpoint for this)
       axios
-        .put("http://localhost:10000/api/vehicle/repair", repairData) // Replace with your update API
+        .put(
+          `http://localhost:10000/api/vehicle/repair/${selectedRepair.vehicle_number}`,
+          repairData
+        )
         .then(() => {
           setRepairs((prevRepairs) =>
             prevRepairs.map((repair) =>
-              repair.id === selectedRepair.id
+              repair.vehicle_number === selectedRepair.vehicle_number
                 ? { ...selectedRepair, ...repairData }
                 : repair
             )
@@ -124,8 +137,8 @@ const DetailVehicleRepair = () => {
       vehicleNumber: "",
       repairDate: "",
       repairDetails: "",
-      costAmount: "0", 
-      costCents: "00", 
+      costAmount: "0",
+      costCents: "00",
     });
     setSelectedRepair(null);
     setIsEditing(false);
@@ -165,7 +178,7 @@ const DetailVehicleRepair = () => {
   };
 
   const handleSignOut = () => {
-    navigate("/");
+    navigate("/"); // navigate to the sign out page
   };
 
   const toggleDetails = () => {
@@ -219,10 +232,21 @@ const DetailVehicleRepair = () => {
       </aside>
 
       <div className="Detail-main">
-        <h1 className="Detail-heading">Vehicle Repair Details</h1>
-        <button className="add-button" onClick={() => setShowModal(true)}>
-          Add New Repair
-        </button>
+        <div className="header-actions">
+          <h1 className="Detail-heading">Vehicle Repair Details</h1>
+          <div className="header-controls">
+            <button className="add-button" onClick={() => setShowModal(true)}>
+              Add New Repair
+            </button>
+            <input
+              type="text"
+              placeholder="Search by Vehicle Number"
+              value={searchQuery}
+              onChange={handleSearchQueryChange}
+              className="search-bar"
+            />
+          </div>
+        </div>
 
         {showModal && (
           <div className="modal-overlay">
@@ -328,45 +352,49 @@ const DetailVehicleRepair = () => {
           </div>
         )}
 
-        <table className="Detail-table">
-          <thead>
-            <tr>
-              <th>Vehicle Number</th>
-              <th>Repair Date</th>
-              <th>Description</th>
-              <th>Cost</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {repairs.map((repair) => (
-              <tr key={repair.id}>
-                <td>{repair.vehicle_number}</td>
-                <td>{repair.date}</td>
-                <td>{repair.description}</td>
-                <td>
-                  {repair.amount && !isNaN(repair.amount)
-                    ? repair.amount.toFixed(2)
-                    : "0.00"}
-                </td>
-                <td>
-                  <button
-                    className="update-button"
-                    onClick={() => handleUpdate(repair)}
-                  >
-                    Update
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={() => openDeleteConfirmation(repair)}
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="Detail-table-container">
+          <table className="Detail-table">
+            <thead>
+              <tr>
+                <th>Vehicle Number</th>
+                <th>Repair Date</th>
+                <th>Description</th>
+                <th>Cost</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+            {filteredRepairs.map((repair) => (
+                <tr key={repair.id}>
+                  <td>{repair.vehicle_number}</td>
+                  <td>{repair.date}</td>
+                  <td>{repair.description}</td>
+                  <td>
+                    {repair.amount && !isNaN(repair.amount)
+                      ? repair.amount.toFixed(2)
+                      : "0.00"}
+                  </td>
+                  <td>
+                  <div className="action">
+                    <button
+                      className="update-button"
+                      onClick={() => handleUpdate(repair)}
+                    >
+                      Update
+                    </button>
+                    <button
+                      className="delete-button"
+                      onClick={() => openDeleteConfirmation(repair)}
+                    >
+                      Delete
+                    </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
