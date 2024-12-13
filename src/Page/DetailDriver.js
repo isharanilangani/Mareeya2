@@ -223,7 +223,7 @@ const DetailDriver = () => {
                 type="text"
                 name="vehicle_number"
                 placeholder="Vehicle Number"
-                value={newDriver.vehicle_number}
+                value={newDriver.vehicle_no}
                 onChange={handleInputChange}
                 required
                 readOnly={isEditing}
