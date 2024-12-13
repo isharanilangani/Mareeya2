@@ -58,21 +58,20 @@ const DetailDriver = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      vehicle_number: newDriver.vehicle_number,
-      driver_name: newDriver.name, 
-      license_number: newDriver.license_number,
-      contact: newDriver.contact,
-    };
     if (isEditing) {
       try {
+        const payload = {
+          driver_name: newDriver.name,
+          contact: newDriver.contact,
+          license_number: newDriver.license_number,
+        };
         await axios.put(
-          `http://localhost:10000/api/vehicle/${selectedDriver.vehicle_number}`,
+          `http://localhost:10000/api/driver/${newDriver.vehicle_number}`,
           payload
         );
         setDrivers((prevDrivers) =>
           prevDrivers.map((driver) =>
-            driver.vehicle_number === selectedDriver.vehicle_number
+            driver.vehicle_number === newDriver.vehicle_number
               ? { ...driver, ...newDriver }
               : driver
           )
@@ -83,9 +82,15 @@ const DetailDriver = () => {
       }
     } else {
       try {
+        const addDriver = {
+          vehicle_number: newDriver.vehicle_number,
+          driver_name: newDriver.name,
+          license_number: newDriver.license_number,
+          contact: newDriver.contact,
+        };
         const response = await axios.post(
           "http://localhost:10000/api/driver",
-          payload
+          addDriver
         );
         setDrivers([...drivers, response.data]);
         fetchDrivers();
@@ -116,16 +121,20 @@ const DetailDriver = () => {
 
   const confirmDelete = async (license_number) => {
     try {
+      // Update the endpoint to use /vehicle instead of /driver if that is the correct URL
       await axios.delete(
         `http://localhost:10000/api/vehicle/${license_number}`
       );
+      // Filter out the driver from the current list
       setDrivers((prevDrivers) =>
         prevDrivers.filter((driver) => driver.license_number !== license_number)
       );
+      // Show success message
       showSuccess("Driver deleted successfully!");
     } catch (error) {
       console.error("Error deleting driver", error);
     }
+    // Close the delete confirmation modal
     setShowDeleteConfirmation(false);
   };
 
