@@ -58,11 +58,17 @@ const DetailDriver = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      vehicle_number: newDriver.vehicle_number,
+      driver_name: newDriver.name, 
+      license_number: newDriver.license_number,
+      contact: newDriver.contact,
+    };
     if (isEditing) {
       try {
         await axios.put(
           `http://localhost:10000/api/vehicle/${selectedDriver.vehicle_number}`,
-          newDriver
+          payload
         );
         setDrivers((prevDrivers) =>
           prevDrivers.map((driver) =>
@@ -79,7 +85,7 @@ const DetailDriver = () => {
       try {
         const response = await axios.post(
           "http://localhost:10000/api/driver",
-          newDriver
+          payload
         );
         setDrivers([...drivers, response.data]);
         fetchDrivers();
@@ -114,9 +120,7 @@ const DetailDriver = () => {
         `http://localhost:10000/api/vehicle/${license_number}`
       );
       setDrivers((prevDrivers) =>
-        prevDrivers.filter(
-          (driver) => driver.license_number !== license_number
-        )
+        prevDrivers.filter((driver) => driver.license_number !== license_number)
       );
       showSuccess("Driver deleted successfully!");
     } catch (error) {
