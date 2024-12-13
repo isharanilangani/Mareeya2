@@ -310,7 +310,7 @@ const DetailDriver = () => {
             <tbody>
               {filteredDrivers.map((driver) => (
                 <tr key={driver.id}>
-                  <td>{driver.vehicle_number}</td>
+                  <td>{driver.vehicle_no}</td>
                   <td>{driver.name}</td>
                   <td>{driver.license_number}</td>
                   <td>{driver.contact}</td>
