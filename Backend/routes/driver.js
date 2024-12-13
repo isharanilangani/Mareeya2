@@ -167,4 +167,78 @@ router.get("/numbers", (req, res) => {
   });
 });
 
+//insert new driver
+router.post("/", (req, res) => {
+  const { vehicle_number, driver_name, contact, license_number } = req.body;
+
+  // Validate required fields
+  if (!vehicle_number || !contact || !driver_name || !license_number) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  const vehicleQuery =
+    "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
+  db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database error occurred." });
+    }
+
+    if (vehicleRows.length > 0) {
+      // Vehicle exists, update the driver details
+      const vehicleId = vehicleRows[0].vehicle_id;
+      const updateDriverQuery =
+        "UPDATE drivers SET name = ?, contact = ?, license_number = ? WHERE vehicle_id = ?";
+      db.query(
+        updateDriverQuery,
+        [driver_name, contact, license_number, vehicleId],
+        (err) => {
+          if (err) {
+            console.error(err);
+            return res
+              .status(500)
+              .json({ message: "Failed to update driver details." });
+          }
+          return res
+            .status(200)
+            .json({ message: "Driver details updated successfully." });
+        }
+      );
+    } else {
+      // Vehicle doesn't exist, insert a new vehicle and driver
+      const insertVehicleQuery =
+        "INSERT INTO vehicles (vehicle_number) VALUES (?)";
+      db.query(insertVehicleQuery, [vehicle_number], (err, result) => {
+        if (err) {
+          console.error(err);
+          return res
+            .status(500)
+            .json({ message: "Failed to insert vehicle details." });
+        }
+
+        const vehicleId = result.insertId;
+        const insertDriverQuery =
+          "INSERT INTO drivers (name, contact, license_number, vehicle_id) VALUES(?, ?, ?, ?)";
+        db.query(
+          insertDriverQuery,
+          [driver_name, contact, license_number, vehicleId],
+          (err) => {
+            if (err) {
+              console.error(err);
+              return res
+                .status(500)
+                .json({ message: "Failed to insert driver details." });
+            }
+
+            return res.status(200).json({
+              message: "Vehicle and driver details added successfully.",
+              vehicleId,
+            });
+          }
+        );
+      });
+    }
+  });
+});
+
 module.exports = router;
