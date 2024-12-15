@@ -9,6 +9,7 @@ const DetailVehicleRepair = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [filteredRepairs, setFilteredRepairs] = useState([]);
   const [, setCurrentRepairId] = useState(null);
   const [vehicleFetchError, setVehicleFetchError] = useState(null);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
@@ -52,15 +53,14 @@ const DetailVehicleRepair = () => {
       });
   }, []);
 
-  // Handle the search query change
-  const handleSearchQueryChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // Filter repairs based on search query
-  const filteredRepairs = repairs.filter((repair) =>
-    repair.vehicle_number.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const filtered = repairs.filter(
+      (repair) =>
+        repair.vehicle_number &&
+        repair.vehicle_number.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredRepairs(filtered);
+  }, [searchQuery, repairs]);
 
   // Handle numeric part of the cost input change
   const handleAmountChange = (e) => {
@@ -221,7 +221,7 @@ const DetailVehicleRepair = () => {
               type="text"
               placeholder="Search by Vehicle Number"
               value={searchQuery}
-              onChange={handleSearchQueryChange}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="search-bar"
             />
           </div>
