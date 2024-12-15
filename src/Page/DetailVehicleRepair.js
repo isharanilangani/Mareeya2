@@ -17,7 +17,7 @@ const DetailVehicleRepair = () => {
   const [, setCurrentRepairId] = useState(null);
   const [vehicleFetchError, setVehicleFetchError] = useState(null);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
-  const [selectedRepair, setSelectedRepair] = useState(null);
+  const [, setSelectedRepair] = useState(null);
   const [newRepair, setNewRepair] = useState({
     vehicleNumber: "",
     repairDate: "",
@@ -27,6 +27,10 @@ const DetailVehicleRepair = () => {
   });
   const [vehicleNumbers, setVehicleNumbers] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchRepairs();
+  }, []);
 
   const showSuccess = (message) => {
     setSuccessMessage(message);
@@ -52,16 +56,18 @@ const DetailVehicleRepair = () => {
   };
 
   // Fetch repair records on component mount
-  useEffect(() => {
-    axios
-      .get("http://localhost:10000/api/vehicle/repair")
-      .then((response) => {
-        setRepairs(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the repair records:", error);
-      });
-  }, []);
+  const fetchRepairs = async () => {
+    try {
+      const response = await axios.get("http://localhost:10000/api/vehicle/repair");
+      const validRepairs = response.data.filter(
+        (repair) => repair.vehicle_number
+      );
+      setRepairs(validRepairs);
+      setFilteredRepairs(validRepairs);
+    } catch (error) {
+      console.error("Error fetching repairs data", error);
+    }
+  };
 
   useEffect(() => {
     const filtered = repairs.filter(
@@ -108,17 +114,20 @@ const DetailVehicleRepair = () => {
           // Update repair
           console.log("Sending data:", newRepair);
           await axios.put(
-            `http://localhost:10000/api/vehicle/repair/${selectedRepair.vehicle_number}`,
+            `http://localhost:10000/api/vehicle/repair/${newRepair.vehicleNumber}/${newRepair.repairDate}`,
             repairData
           );
 
           setRepairs((prevRepairs) =>
             prevRepairs.map((repair) =>
-              repair.vehicle_number === selectedRepair.vehicle_number
+              repair.vehicle_no !== newRepair.vehicleNumber &&
+              repair.date !== newRepair.repairDate
                 ? { ...repair, ...newRepair }
                 : repair
             )
           );
+          fetchRepairs();
+          showSuccess("Repair updated successfully!");
         } catch (error) {
           console.error("Error updating vehicle", error);
         }
@@ -129,6 +138,7 @@ const DetailVehicleRepair = () => {
           repairData
         );
         setRepairs([...repairs, { id: response.data.id, ...repairData }]);
+        showSuccess("Repair added successfully!");
       }
       resetModal();
     } catch (error) {
