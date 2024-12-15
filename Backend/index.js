@@ -6,6 +6,7 @@ const authRoutes = require("./routes/auth");
 const vehicleRoutes = require("./routes/vehicles");
 const vehicleRepairRoutes = require("./routes/repair");
 const driverRoutes = require("./routes/driver");
+const driverPaymentRoutes = require("./routes/payment");
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/vehicle", vehicleRoutes);
 app.use("/api/vehicle/repair", vehicleRepairRoutes);
 app.use("/api/driver", driverRoutes);
+app.use("/api/driver/payment", driverPaymentRoutes);
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
