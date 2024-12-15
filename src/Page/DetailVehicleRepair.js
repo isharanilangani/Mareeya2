@@ -9,7 +9,7 @@ const DetailVehicleRepair = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [currentRepairId, setCurrentRepairId] = useState(null);
+  const [, setCurrentRepairId] = useState(null);
   const [vehicleFetchError, setVehicleFetchError] = useState(null);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
   const [selectedRepair, setSelectedRepair] = useState(null);

@@ -13,7 +13,7 @@ const DetailDriver = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [, setSelectedDriver] = useState(null);
   const [driverToDelete, setDriverToDelete] = useState(null);
   const [newDriver, setNewDriver] = useState({
     vehicle_number: "",
