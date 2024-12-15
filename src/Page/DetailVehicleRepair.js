@@ -106,7 +106,7 @@ const DetailVehicleRepair = () => {
       if (isEditing) {
         try {
           // Update repair
-          console.log('Sending data:', newRepair);
+          console.log("Sending data:", newRepair);
           await axios.put(
             `http://localhost:10000/api/vehicle/repair/${selectedRepair.vehicle_number}`,
             repairData
@@ -175,7 +175,9 @@ const DetailVehicleRepair = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:10000/api/vehicle/repair/${repairToDelete.vehicle_number}/${repairToDelete.date}`);
+      await axios.delete(
+        `http://localhost:10000/api/vehicle/repair/${repairToDelete.vehicle_number}/${repairToDelete.date}`
+      );
       setRepairs((prevRepairs) =>
         prevRepairs.filter(
           (repair) =>
@@ -342,7 +344,7 @@ const DetailVehicleRepair = () => {
           </div>
         )}
 
-{showDeleteConfirmation && (
+        {showDeleteConfirmation && (
           <div className="modal-overlay">
             <div className="modal-container">
               <h2 className="modal-title">Confirm Delete</h2>
@@ -365,7 +367,7 @@ const DetailVehicleRepair = () => {
           </div>
         )}
 
-{showSuccessModal && (
+        {showSuccessModal && (
           <div className="success-modal-overlay">
             <div className="success-modal-container">
               <p className="success-message">{successMessage}</p>
