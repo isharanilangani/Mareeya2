@@ -97,21 +97,21 @@ router.get("/", (req, res) => {
 });
 
 // DELETE API to remove a vehicle by vehicle_number
-router.delete("/:license_number", (req, res) => {
-  const { license_number } = req.params;
+router.delete("/:vehicle_number", (req, res) => {
+  const { vehicle_number } = req.params;
 
-  if (!license_number) {
+  if (!vehicle_number) {
     return res.status(400).json({ message: "License number is required." });
   }
 
   // Query to fetch the vehicle ID associated with the driver
   const getVehicleIdQuery = `
       SELECT vehicle_id 
-      FROM drivers 
-      WHERE license_number = ?
+      FROM vehicles 
+      WHERE vehicle_number = ?
     `;
 
-  db.query(getVehicleIdQuery, [license_number], (err, rows) => {
+  db.query(getVehicleIdQuery, [vehicle_number], (err, rows) => {
     if (err) {
       console.error("Error fetching vehicle ID:", err);
       return res.status(500).json({ message: "Database error occurred." });
@@ -120,15 +120,15 @@ router.delete("/:license_number", (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({
         message:
-          "No driver or associated vehicle found for the given license number.",
+          "No driver or associated vehicle found for the given vehicle number.",
       });
     }
 
     const vehicleId = rows[0].vehicle_id;
 
     // Begin deletion process
-    const deleteDriverQuery = "DELETE FROM drivers WHERE license_number = ?";
-    db.query(deleteDriverQuery, [license_number], (err) => {
+    const deleteDriverQuery = "DELETE FROM drivers WHERE vehicle_id = ?";
+    db.query(deleteDriverQuery, [vehicleId], (err) => {
       if (err) {
         console.error("Error deleting driver:", err);
         return res.status(500).json({ message: "Failed to delete driver." });

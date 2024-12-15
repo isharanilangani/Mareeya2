@@ -60,22 +60,35 @@ const DetailDriver = () => {
     e.preventDefault();
     if (isEditing) {
       try {
+        if (!newDriver.vehicle_no) {
+          console.error("Vehicle number is missing for update!");
+          return;
+        }
+
         const payload = {
           driver_name: newDriver.name,
           contact: newDriver.contact,
           license_number: newDriver.license_number,
         };
+
+        console.log(
+          "Updating driver with vehicle number:",
+          newDriver.vehicle_no
+        );
+
         await axios.put(
-          `http://localhost:10000/api/driver/${newDriver.vehicle_number}`,
+          `http://localhost:10000/api/driver/${newDriver.vehicle_no}`,
           payload
         );
+
         setDrivers((prevDrivers) =>
           prevDrivers.map((driver) =>
-            driver.vehicle_number === newDriver.vehicle_number
-              ? { ...driver, ...newDriver }
+            driver.vehicle_number === newDriver.vehicle_no
+              ? { ...driver, ...payload }
               : driver
           )
         );
+        fetchDrivers();
         showSuccess("Driver updated successfully!");
       } catch (error) {
         console.error("Error updating driver", error);
@@ -88,13 +101,17 @@ const DetailDriver = () => {
           license_number: newDriver.license_number,
           contact: newDriver.contact,
         };
+
+        console.log("Adding new driver:", addDriver);
+
         const response = await axios.post(
           "http://localhost:10000/api/driver",
           addDriver
         );
+
         setDrivers([...drivers, response.data]);
         fetchDrivers();
-        showSuccess("Drivers added successfully!");
+        showSuccess("Driver added successfully!");
       } catch (error) {
         console.error("Error adding new drivers", error);
       }
@@ -119,25 +136,17 @@ const DetailDriver = () => {
     setShowModal(false);
   };
 
-  const confirmDelete = async (license_number) => {
+  const confirmDelete = async () => {
     try {
-      // Update the endpoint to use /vehicle instead of /driver if that is the correct URL
-      await axios.delete(
-        `http://localhost:10000/api/vehicle/${license_number}`
-      );
-      // Filter out the driver from the current list
-      setDrivers((prevDrivers) =>
-        prevDrivers.filter((driver) => driver.license_number !== license_number)
-      );
-      // Show success message
+      await axios.delete(`http://localhost:10000/api/vehicle/${driverToDelete.vehicle_no}`);
+      setDrivers(drivers.filter((driver) => driver.vehicle_no !== driverToDelete.vehicle_no));
       showSuccess("Driver deleted successfully!");
     } catch (error) {
       console.error("Error deleting driver", error);
     }
-    // Close the delete confirmation modal
     setShowDeleteConfirmation(false);
   };
-
+  
   const handleSignOut = () => {
     navigate("/");
   };
@@ -285,7 +294,7 @@ const DetailDriver = () => {
               <div className="modal-buttons">
                 <button
                   className="modal-submit-button"
-                  onClick={() => confirmDelete(driverToDelete.license_number)}
+                  onClick={() => confirmDelete(driverToDelete.vehicle_no)}
                 >
                   Yes
                 </button>
