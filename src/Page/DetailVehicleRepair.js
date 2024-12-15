@@ -6,6 +6,10 @@ import "./Detail.css";
 
 const DetailVehicleRepair = () => {
   const [repairs, setRepairs] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [repairToDelete, setRepairToDelete] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -23,6 +27,12 @@ const DetailVehicleRepair = () => {
   });
   const [vehicleNumbers, setVehicleNumbers] = useState([]);
   const navigate = useNavigate();
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1000);
+  };
 
   // Fetch vehicle numbers on component mount
   const handleVehicleDropdownClick = async () => {
@@ -154,23 +164,30 @@ const DetailVehicleRepair = () => {
   };
 
   const openDeleteConfirmation = (repair) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete repair for vehicle ${repair.vehicle_number}?`
-    );
-    if (confirmDelete) {
-      handleDelete(repair.id); // Call the delete function (you'll need to implement this)
-    }
+    setRepairToDelete(repair);
+    setShowDeleteConfirmation(true);
   };
 
-  const handleDelete = (repairId) => {
-    axios
-      .delete(`http://localhost:10000/api/vehicle/repair/${repairId}`)
-      .then(() => {
-        setRepairs(repairs.filter((repair) => repair.id !== repairId));
-      })
-      .catch((error) => {
-        console.error("Error deleting repair:", error);
-      });
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const toggleDetails = () => {
+    setIsDetailsOpen((prev) => !prev);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:10000/api/vehicle/repair/${repairToDelete.vehicle_number}/${repairToDelete.date}`);
+      setRepairs((prevRepairs) =>
+        prevRepairs.filter(
+          (repair) =>
+            repair.vehicle_no !== repairToDelete.vehicle_number &&
+            repair.date !== repairToDelete.date
+        )
+      );
+      showSuccess("Repair deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting driver", error);
+    }
+    setShowDeleteConfirmation(false);
   };
 
   const handleSignOut = () => {
@@ -191,18 +208,31 @@ const DetailVehicleRepair = () => {
             <li>
               <Link to="/settings">Settings</Link>
             </li>
-            <li>
-              <Link to="/vehicle">Vehicle</Link>
+            <li onClick={toggleDetails} className="details-toggle">
+              Details
+              <i
+                className={`fa ${
+                  isDetailsOpen ? "fa-chevron-up" : "fa-chevron-down"
+                }`}
+                style={{ marginLeft: "10px" }}
+              ></i>
             </li>
-            <li>
-              <Link to="/vehicleRepair">Vehicle Repair</Link>
-            </li>
-            <li>
-              <Link to="/driver">Driver</Link>
-            </li>
-            <li>
-              <Link to="/driverPayments">Driver Payments</Link>
-            </li>
+            {isDetailsOpen && (
+              <ul className="nested-list">
+                <li>
+                  <Link to="/vehicle">Vehicle</Link>
+                </li>
+                <li>
+                  <Link to="/vehicleRepair">Vehicle Repair</Link>
+                </li>
+                <li>
+                  <Link to="/driver">Driver</Link>
+                </li>
+                <li>
+                  <Link to="/driverPayments">Driver Payments</Link>
+                </li>
+              </ul>
+            )}
           </ul>
         </nav>
         <button onClick={handleSignOut} className="sign-out-button">
@@ -309,6 +339,37 @@ const DetailVehicleRepair = () => {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+{showDeleteConfirmation && (
+          <div className="modal-overlay">
+            <div className="modal-container">
+              <h2 className="modal-title">Confirm Delete</h2>
+              <p>Are you sure you want to delete the driver?</p>
+              <div className="modal-buttons">
+                <button
+                  className="modal-submit-button"
+                  onClick={() => confirmDelete(repairToDelete.vehicle_no)}
+                >
+                  Yes
+                </button>
+                <button
+                  className="modal-close-button"
+                  onClick={() => setShowDeleteConfirmation(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+{showSuccessModal && (
+          <div className="success-modal-overlay">
+            <div className="success-modal-container">
+              <p className="success-message">{successMessage}</p>
+            </div>
           </div>
         )}
 
