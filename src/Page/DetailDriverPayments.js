@@ -1,134 +1,153 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./Dashboard.css";
 import "./Detail.css";
 
 const DetailDriverPayments = () => {
-  const [payments, setPayments] = useState([
-    {
-      id: 1,
-      driverName: "John Doe",
-      paymentDate: "2023-12-01",
-      paymentAmount: 5000,
-      paymentPurpose: "Monthly Salary",
-      licenseNumber: "AB1234567",
-    },
-    {
-      id: 2,
-      driverName: "Jane Smith",
-      paymentDate: "2023-11-20",
-      paymentAmount: 3000,
-      paymentPurpose: "Fuel Reimbursement",
-      licenseNumber: "CD7654321",
-    },
-    {
-      id: 3,
-      driverName: "Mike Johnson",
-      paymentDate: "2023-10-15",
-      paymentAmount: 2000,
-      paymentPurpose: "Bonus",
-      licenseNumber: "EF0987654",
-    },
-  ]);
-
-  const [showModal, setShowModal] = useState(false);
+  const [payments, setPayments] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState(null);
   const [paymentToDelete, setPaymentToDelete] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [filteredPayments, setFilteredPayments] = useState([]);
+  const [, setCurrentPaymentId] = useState(null);
+  const [driverFetchError, setDriverFetchError] = useState(null);
+  const [isLoadingDrivers, setIsLoadingDrivers] = useState(false);
+  const [, setSelectedPayment] = useState(null);
   const [newPayment, setNewPayment] = useState({
+    licenseNumber: "",
     driverName: "",
     paymentDate: "",
-    PaymentAmount: "0",
-    PaymentCents: "00",
-    paymentPurpose: "",
-    licenseNumber: "",
+    paymentDetails: "",
+    costAmount: "0",
+    costCents: "00",
   });
+  const [driverName, setDriverNames] = useState([]);
+  const navigate = useNavigate();
 
-  const licenseNumbers = [
-    ...new Set(payments.map((payment) => payment.licenseNumber)),
-  ];
+  useEffect(() => {
+    fetchPayments();
+  }, []);
 
-  // Handle amount change
-  const handleAmountChange = (e) => {
-    let value = e.target.value.replace(/[^0-9]/g, "");
-    setNewPayment({ ...newPayment, PaymentAmount: value });
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessModal(true);
+    setTimeout(() => setShowSuccessModal(false), 1000);
   };
 
-  // Handle cents change
+  // Fetch name on component mount
+  const handleDriverDropdownClick = async () => {
+    setIsLoadingDrivers(true);
+    setDriverFetchError(null);
+    try {
+      const response = await axios.get(
+        "http://localhost:10000/api/driver/name"
+      );
+      setDriverNames(response.data.map((d) => d.name));
+    } catch (error) {
+      setDriverFetchError("Failed to fetch drivers names.");
+      console.error("Error fetching drivers names:", error);
+    } finally {
+      setIsLoadingDrivers(false);
+    }
+  };
+
+  // Fetch payments records on component mount
+  const fetchPayments = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:10000/api/driver/payment"
+      );
+      const validPayments = response.data.filter(
+        (payment) => payment.license_number
+      );
+      setPayments(validPayments);
+      setFilteredPayments(validPayments);
+    } catch (error) {
+      console.error("Error fetching payments data", error);
+    }
+  };
+
+  useEffect(() => {
+    const filtered = payments.filter(
+      (payment) =>
+        payment.license_number &&
+        payment.license_number.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredPayments(filtered);
+  }, [searchQuery, payments]);
+
+  // Handle numeric part of the cost input change
+  const handleAmountChange = (e) => {
+    let value = e.target.value.replace(/[^0-9]/g, "");
+    setNewPayment({ ...newPayment, costAmount: value });
+  };
+
+  // Handle cents part of the cost input change
   const handleCentsChange = (e) => {
     let value = e.target.value.replace(/[^0-9]/g, "");
     if (value.length > 2) {
       value = value.substring(0, 2);
     }
-    setNewPayment({ ...newPayment, PaymentCents: value });
+    setNewPayment({ ...newPayment, costCents: value });
   };
 
-  // Handle license number change and auto-fill driver name
-  const handleLicenseNumberChange = (e) => {
-    const selectedLicenseNumber = e.target.value;
-    setNewPayment({ ...newPayment, licenseNumber: selectedLicenseNumber });
-
-    // Find the corresponding driver name for the selected license number
-    const selectedDriver = payments.find(
-      (payment) => payment.licenseNumber === selectedLicenseNumber
-    );
-    if (selectedDriver) {
-      setNewPayment({ ...newPayment, driverName: selectedDriver.driverName });
-    }
-  };
-
-  // Form submit handling
-  const handleFormSubmit = (e) => {
+  // Handle the form submission for adding new repair
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    const fullPaymentAmount =
-      parseInt(newPayment.PaymentAmount) +
-      parseInt(newPayment.PaymentCents) / 100;
+    const fullCost =
+      parseInt(newPayment.costAmount || "0", 10) +
+      parseInt(newPayment.costCents || "0", 10) / 100;
+
     const paymentData = {
-      driverName: newPayment.driverName,
-      paymentDate: newPayment.paymentDate,
-      paymentAmount: fullPaymentAmount,
-      paymentPurpose: newPayment.paymentPurpose,
-      licenseNumber: newPayment.licenseNumber,
+      license_number: newPayment.licenseNumber,
+      name: newPayment.driverName,
+      date: newPayment.paymentDate,
+      description: newPayment.paymentDetails,
+      amount: isNaN(fullCost) ? 0 : fullCost,
     };
 
-    if (isEditing) {
-      setPayments((prevPayments) =>
-        prevPayments.map((payment) =>
-          payment.id === selectedPayment.id
-            ? { ...selectedPayment, ...paymentData }
-            : payment
-        )
-      );
-    } else {
-      const newId = payments.length ? payments[payments.length - 1].id + 1 : 1;
-      setPayments([...payments, { id: newId, ...paymentData }]);
+    try {
+      if (isEditing) {
+        try {
+          // Update repair
+          console.log("Sending data:", newPayment);
+          await axios.put(
+            `http://localhost:10000/api/driver/payment/${newPayment.licenseNumber}/${newPayment.paymentDate}`,
+            paymentData
+          );
+
+          setPayments((prevPayments) =>
+            prevPayments.map((payment) =>
+              payment.licenseNumber !== newPayment.licenseNumber &&
+              payment.date !== newPayment.paymentDate
+                ? { ...payment, ...newPayment }
+                : payment
+            )
+          );
+          fetchPayments();
+          showSuccess("Payments updated successfully!");
+        } catch (error) {
+          console.error("Error updating payments", error);
+        }
+      } else {
+        // Add new payments
+        const response = await axios.post(
+          "http://localhost:10000/api/driver/payment",
+          paymentData
+        );
+        setPayments([...payments, { id: response.data.id, ...paymentData }]);
+        showSuccess("Payments added successfully!");
+      }
+      resetModal();
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-
-    resetModal();
-  };
-
-  const resetModal = () => {
-    setNewPayment({
-      driverName: "",
-      paymentDate: "",
-      PaymentAmount: "0",
-      PaymentCents: "00",
-      paymentPurpose: "",
-      licenseNumber: "",
-    });
-    setSelectedPayment(null);
-    setIsEditing(false);
-    setShowModal(false);
-  };
-
-  const confirmDelete = () => {
-    setPayments(
-      payments.filter((payment) => payment.id !== paymentToDelete.id)
-    );
-    setPaymentToDelete(null);
-    setShowDeleteConfirmation(false);
   };
 
   const handleUpdate = (payment) => {
@@ -136,18 +155,30 @@ const DetailDriverPayments = () => {
     setNewPayment({
       driverName: payment.driverName,
       paymentDate: payment.paymentDate,
-      PaymentAmount: payment.paymentAmount.toString(),
-      PaymentCents: (payment.paymentAmount % 1 === 0
-        ? "00"
-        : (payment.paymentAmount * 100) % 100
-      )
-        .toString()
-        .padStart(2, "0"),
       paymentPurpose: payment.paymentPurpose,
       licenseNumber: payment.licenseNumber,
+      costAmount: Math.floor(payment.amount),
+      costCents: payment.amount
+        ? ((payment.amount % 1) * 100).toFixed(0).padStart(2, "0")
+        : "00",
     });
     setIsEditing(true);
     setShowModal(true);
+  };
+
+  // Reset modal state
+  const resetModal = () => {
+    setNewPayment({
+      driverName: "",
+      paymentDate: "",
+      costAmount: "0",
+      costCents: "00",
+      paymentPurpose: "",
+      licenseNumber: "",
+    });
+    setIsEditing(false);
+    setCurrentPaymentId(null);
+    setShowModal(false);
   };
 
   const openDeleteConfirmation = (payment) => {
@@ -155,16 +186,32 @@ const DetailDriverPayments = () => {
     setShowDeleteConfirmation(true);
   };
 
-  const navigate = useNavigate();
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const toggleDetails = () => {
+    setIsDetailsOpen((prev) => !prev);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(
+        `http://localhost:10000/api/driver/payment/${paymentToDelete.licenseNumber}/${paymentToDelete.date}`
+      );
+      setPayments((prevPayments) =>
+        prevPayments.filter(
+          (payment) =>
+            payment.licenseNumber !== paymentToDelete.licenseNumber &&
+            payment.date !== paymentToDelete.date
+        )
+      );
+      showSuccess("Payment deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting payment", error);
+    }
+    setShowDeleteConfirmation(false);
+  };
 
   const handleSignOut = () => {
     navigate("/");
-  };
-
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
-  const toggleDetails = () => {
-    setIsDetailsOpen((prev) => !prev);
   };
 
   return (
@@ -214,10 +261,21 @@ const DetailDriverPayments = () => {
       </aside>
 
       <div className="Detail-main">
-        <h1 className="Detail-heading">Driver Payment Details</h1>
-        <button className="add-button" onClick={() => setShowModal(true)}>
-          Add New Payment
-        </button>
+        <div className="header-actions">
+          <h1 className="Detail-heading">Driver Payment Details</h1>
+          <div className="header-controls">
+            <button className="add-button" onClick={() => setShowModal(true)}>
+              Add New Payment
+            </button>
+            <input
+              type="text"
+              placeholder="Search by License Number"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-bar"
+            />
+          </div>
+        </div>
 
         {showModal && (
           <div className="modal-overlay">
@@ -228,14 +286,14 @@ const DetailDriverPayments = () => {
 
               {/* License Number Dropdown */}
               <select
-                value={newPayment.licenseNumber}
-                onChange={handleLicenseNumberChange}
+                value={newPayment.driverName}
+                onChange={handleDriverDropdownClick}
                 required
               >
-                <option value="">Select License Number</option>
-                {licenseNumbers.map((licenseNumber) => (
-                  <option key={licenseNumber} value={licenseNumber}>
-                    {licenseNumber}
+                <option value="">Select Driver Name</option>
+                {driverName.map((driverName) => (
+                  <option key={driverName} value={driverName}>
+                    {driverName}
                   </option>
                 ))}
               </select>
@@ -243,10 +301,13 @@ const DetailDriverPayments = () => {
               {/* Driver Name */}
               <input
                 type="text"
-                placeholder="Driver Name"
-                value={newPayment.driverName}
+                placeholder="License Number"
+                value={newPayment.licenseNumber}
                 onChange={(e) =>
-                  setNewPayment({ ...newPayment, driverName: e.target.value })
+                  setNewPayment({
+                    ...newPayment,
+                    licenseNumber: e.target.value,
+                  })
                 }
                 required
                 disabled
@@ -283,7 +344,7 @@ const DetailDriverPayments = () => {
                 <input
                   type="text"
                   placeholder="Amount"
-                  value={newPayment.PaymentAmount}
+                  value={newPayment.costAmount}
                   onChange={handleAmountChange}
                   maxLength="10"
                   required
@@ -292,7 +353,7 @@ const DetailDriverPayments = () => {
                 <input
                   type="text"
                   placeholder="Cents"
-                  value={newPayment.PaymentCents}
+                  value={newPayment.costCents}
                   onChange={handleCentsChange}
                   maxLength="2"
                   required
@@ -335,45 +396,55 @@ const DetailDriverPayments = () => {
           </div>
         )}
 
-        <table className="Detail-table">
-          <thead>
-            <tr>
-              <th>Driver Name</th>
-              <th>Payment Date</th>
-              <th>Payment Purpose</th>
-              <th>License Number</th>
-              <th>Amount</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.map((payment) => (
-              <tr key={payment.id}>
-                <td>{payment.driverName}</td>
-                <td>{payment.paymentDate}</td>
-                <td>{payment.paymentPurpose}</td>
-                <td>{payment.licenseNumber}</td>
-                <td>{`Rs. ${payment.paymentAmount.toFixed(2)}`}</td>
-                <td>
-                  <div className="action">
-                    <button
-                      className="update-button"
-                      onClick={() => handleUpdate(payment)}
-                    >
-                      Update
-                    </button>
-                    <button
-                      className="delete-button"
-                      onClick={() => openDeleteConfirmation(payment)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
+        {showSuccessModal && (
+          <div className="success-modal-overlay">
+            <div className="success-modal-container">
+              <p className="success-message">{successMessage}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="Detail-table-container">
+          <table className="Detail-table">
+            <thead>
+              <tr>
+                <th>Driver Name</th>
+                <th>Payment Date</th>
+                <th>Payment Purpose</th>
+                <th>License Number</th>
+                <th>Amount</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {payments.map((payment) => (
+                <tr key={payment.id}>
+                  <td>{payment.name}</td>
+                  <td>{payment.date}</td>
+                  <td>{payment.purpose}</td>
+                  <td>{payment.license_number}</td>
+                  <td>{payment.amount.toFixed(2)}</td>
+                  <td>
+                    <div className="action">
+                      <button
+                        className="update-button"
+                        onClick={() => handleUpdate(payment)}
+                      >
+                        Update
+                      </button>
+                      <button
+                        className="delete-button"
+                        onClick={() => openDeleteConfirmation(payment)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
