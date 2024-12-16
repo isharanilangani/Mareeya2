@@ -28,20 +28,19 @@ ChartJS.register(
 );
 
 const ManageDriver = () => {
-  const [drivers, setDrivers] = useState([]); // State for drivers
+  const [drivers, setDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [totalPayments, setTotalPayments] = useState(0); // State for total payments
 
-  // Fetch drivers from the API
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
         const response = await axios.get(
           "http://localhost:10000/api/driver/name"
         );
-        const fetchedDrivers = response.data; // Assume API returns an array of drivers
-        setDrivers(fetchedDrivers);
+        setDrivers(response.data);
       } catch (error) {
         console.error("Error fetching drivers:", error);
       }
@@ -50,8 +49,29 @@ const ManageDriver = () => {
     fetchDrivers();
   }, []);
 
-  const handleSearch = () => {
-    setShowModal(true);
+  const handleSearch = async () => {
+    if (!selectedDriver || !selectedDate) {
+      alert("Please select a driver and a date.");
+      return;
+    }
+
+    try {
+      const formattedDate = selectedDate.toISOString().slice(0, 7); // Format to YYYY-MM
+      const response = await axios.get(
+        `http://localhost:10000/api/driver/manage/total`,
+        {
+          params: {
+            driver: selectedDriver,
+            date: formattedDate,
+          },
+        }
+      );
+      setTotalPayments(response.data.total || 0); // Assume API returns { total: value }
+      setShowModal(true);
+    } catch (error) {
+      console.error("Error fetching total payments:", error);
+      alert("Failed to fetch total payments. Please try again.");
+    }
   };
 
   const navigate = useNavigate();
@@ -67,13 +87,7 @@ const ManageDriver = () => {
   };
 
   const chartData = {
-    labels: [
-      "2024-01-01",
-      "2024-01-02",
-      "2024-01-03",
-      "2024-01-04",
-      "2024-01-05",
-    ],
+    labels: ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"],
     datasets: [
       {
         label: "Payments",
@@ -177,7 +191,7 @@ const ManageDriver = () => {
         {/* Total Payments Section */}
         <div className="total-expenses-box">
           <p className="total-expenses-text">
-            Total Payments : <br /> 0 LKR
+            Total Payments : <br /> {totalPayments} LKR
           </p>
         </div>
       </div>
@@ -209,7 +223,7 @@ const ManageDriver = () => {
                     })
                   : "Not selected"}
               </h5>
-              <h5>Total Payments: 0 LKR</h5>
+              <h5>Total Payments: {totalPayments} LKR</h5>
 
               {/* Bar Chart */}
               <Bar data={chartData} options={{ responsive: true }} />
