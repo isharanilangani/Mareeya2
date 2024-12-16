@@ -39,18 +39,22 @@ const DetailDriverPayments = () => {
     setTimeout(() => setShowSuccessModal(false), 1000);
   };
 
-  // Fetch name on component mount
   const handleDriverDropdownClick = async () => {
     setIsLoadingDrivers(true);
     setDriverFetchError(null);
+
     try {
       const response = await axios.get(
         "http://localhost:10000/api/driver/name"
       );
-      setDriverNames(response.data.map((d) => d.name));
+
+      // Extract unique names
+      const uniqueNames = Array.from(new Set(response.data.map((d) => d.name)));
+
+      setDriverNames(uniqueNames);
     } catch (error) {
-      setDriverFetchError("Failed to fetch drivers names.");
-      console.error("Error fetching drivers names:", error);
+      setDriverFetchError("Failed to fetch drivers' names.");
+      console.error("Error fetching drivers' names:", error);
     } finally {
       setIsLoadingDrivers(false);
     }
@@ -75,8 +79,8 @@ const DetailDriverPayments = () => {
   useEffect(() => {
     const filtered = payments.filter(
       (payment) =>
-        payment.license_number &&
-        payment.license_number.toLowerCase().includes(searchQuery.toLowerCase())
+        payment.licenseNumber &&
+        payment.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredPayments(filtered);
   }, [searchQuery, payments]);
@@ -284,21 +288,31 @@ const DetailDriverPayments = () => {
                 {isEditing ? "Update Payment Details" : "Add Payment Details"}
               </h2>
 
-              {/* License Number Dropdown */}
+              {/* Driver Name Dropdown */}
               <select
                 value={newPayment.driverName}
-                onChange={handleDriverDropdownClick}
+                onChange={(e) =>
+                  setNewPayment({ ...newPayment, driverName: e.target.value })
+                }
+                onClick={handleDriverDropdownClick} // Fetch data on click
                 required
+                disabled={isEditing} // Disable when editing
               >
                 <option value="">Select Driver Name</option>
-                {driverName.map((driverName) => (
-                  <option key={driverName} value={driverName}>
-                    {driverName}
-                  </option>
-                ))}
+                {isLoadingDrivers && <option>Loading...</option>}
+                {driverFetchError && (
+                  <option disabled>{driverFetchError}</option>
+                )}
+                {!isLoadingDrivers &&
+                  !driverFetchError &&
+                  driverName.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
               </select>
 
-              {/* Driver Name */}
+              {/* License number */}
               <input
                 type="text"
                 placeholder="License Number"
@@ -423,7 +437,7 @@ const DetailDriverPayments = () => {
                   <td>{payment.date}</td>
                   <td>{payment.purpose}</td>
                   <td>{payment.license_number}</td>
-                  <td>{payment.amount.toFixed(2)}</td>
+                  <td>{payment.amount}</td>
                   <td>
                     <div className="action">
                       <button
