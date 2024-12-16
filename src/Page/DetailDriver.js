@@ -136,9 +136,9 @@ const DetailDriver = () => {
 
         setDrivers([...drivers, response.data]);
         fetchDrivers();
-        showSuccess("Driver added successfully!");
+        showSuccess(response.data.message || "Driver added successfully!");
       } catch (error) {
-        console.error("Error adding new drivers", error);
+        showSuccess(error.response?.data?.message || "Failed to add drivers.");
       }
     }
     resetModal();
@@ -312,7 +312,7 @@ const DetailDriver = () => {
                   ))
                 )}
               </select>
-              
+
               <div className="modal-buttons">
                 <button type="submit" className="modal-submit-button">
                   {isEditing ? "Update" : "Add"}
