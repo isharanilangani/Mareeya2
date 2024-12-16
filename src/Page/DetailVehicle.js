@@ -112,19 +112,20 @@ const DetailVehicle = () => {
     setShowModal(false);
   };
 
-  const confirmDelete = async (vehicle_number) => {
+  const confirmDelete = async (vehicle_id) => {
     try {
-      await axios.delete(
-        `http://localhost:10000/api/vehicle/${vehicle_number}`
+      const response = await axios.delete(
+        `http://localhost:10000/api/vehicle/${vehicle_id}`
       );
       setVehicles((prevVehicles) =>
         prevVehicles.filter(
-          (vehicle) => vehicle.vehicle_number !== vehicle_number
+          (vehicle) => vehicle.vehicle_id !== vehicle_id
         )
       );
-      showSuccess("Vehicle deleted successfully!");
+      showSuccess(response.data.message || "Vehicle deleted successfully!");
     } catch (error) {
       console.error("Error deleting vehicle", error);
+      showSuccess(error.response?.data?.message || "Failed to delete vehicle.");
     }
     setShowDeleteConfirmation(false);
   };
@@ -283,7 +284,7 @@ const DetailVehicle = () => {
               <div className="modal-buttons">
                 <button
                   className="modal-submit-button"
-                  onClick={() => confirmDelete(vehicleToDelete.vehicle_number)}
+                  onClick={() => confirmDelete(vehicleToDelete.vehicle_id)}
                 >
                   Yes
                 </button>
