@@ -164,14 +164,12 @@ const DetailDriverPayments = () => {
   const handleUpdate = (payment) => {
     setSelectedPayment(payment);
     setNewPayment({
-      driverName: payment.driverName,
-      paymentDate: payment.paymentDate,
-      paymentPurpose: payment.paymentPurpose,
-      licenseNumber: payment.licenseNumber,
-      costAmount: Math.floor(payment.amount),
-      costCents: payment.amount
-        ? ((payment.amount % 1) * 100).toFixed(0).padStart(2, "0")
-        : "00",
+      driverName: payment.name,
+      paymentDate: payment.date,
+      paymentPurpose: payment.purpose,
+      licenseNumber: payment.license_number,
+      costAmount: Math.floor(payment.amount || 0).toString(),
+      costCents: ((payment.amount % 1) * 100).toFixed(0).padStart(2, "0"),
     });
     setIsEditing(true);
     setShowModal(true);
