@@ -138,15 +138,21 @@ const DetailDriver = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:10000/api/vehicle/${driverToDelete.vehicle_no}`);
-      setDrivers(drivers.filter((driver) => driver.vehicle_no !== driverToDelete.vehicle_no));
+      await axios.delete(
+        `http://localhost:10000/api/vehicle/${driverToDelete.vehicle_no}`
+      );
+      setDrivers(
+        drivers.filter(
+          (driver) => driver.vehicle_no !== driverToDelete.vehicle_no
+        )
+      );
       showSuccess("Driver deleted successfully!");
     } catch (error) {
       console.error("Error deleting driver", error);
     }
     setShowDeleteConfirmation(false);
   };
-  
+
   const handleSignOut = () => {
     navigate("/");
   };
@@ -335,7 +341,11 @@ const DetailDriver = () => {
                   <td>{driver.name}</td>
                   <td>{driver.license_number}</td>
                   <td>{driver.contact}</td>
-                  <td>{driver.vehicle_number}</td>
+                  <td>
+                    {driver.vehicles.map((vehicle, index) => (
+                      <div key={index}>{vehicle.vehicle_number}</div>
+                    ))}
+                  </td>
                   <td>
                     <div className="action">
                       <button

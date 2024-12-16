@@ -81,8 +81,11 @@ router.put("/:vehicle_number", (req, res) => {
 router.get("/", (req, res) => {
   const query = `
     SELECT 
-      drivers.*, 
-      driverby.vehicle_id, 
+      drivers.driver_id, 
+      drivers.license_number, 
+      drivers.name, 
+      drivers.contact, 
+      vehicles.vehicle_id, 
       vehicles.vehicle_number
     FROM 
       drivers
@@ -94,12 +97,41 @@ router.get("/", (req, res) => {
 
   db.query(query, (err, results) => {
     if (err) {
-      console.error("Error fetching drivers, vehicle IDs, and vehicle numbers:", err);
+      console.error(
+        "Error fetching drivers, vehicle IDs, and vehicle numbers:",
+        err
+      );
       res.status(500).send("Error fetching details.");
       return;
     }
 
-    res.json(results);
+    // Group by license number and include all relevant driver details
+    const groupedResults = results.reduce((acc, row) => {
+      const { license_number, driver_id, name, contact, vehicle_number } = row;
+
+      // Initialize the entry if it doesn't exist
+      if (!acc[license_number]) {
+        acc[license_number] = {
+          driver_id,
+          license_number,
+          name,
+          contact,
+          vehicles: [],
+        };
+      }
+
+      // Add the vehicle details to the array
+      acc[license_number].vehicles.push({
+        vehicle_number,
+      });
+
+      return acc;
+    }, {});
+
+    // Convert the grouped result to an array for response
+    const finalResponse = Object.values(groupedResults);
+
+    res.json(finalResponse);
   });
 });
 
@@ -237,6 +269,5 @@ router.get("/name", (req, res) => {
     res.json(results);
   });
 });
-
 
 module.exports = router;
