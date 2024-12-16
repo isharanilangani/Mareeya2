@@ -207,4 +207,23 @@ router.get("/numbers", (req, res) => {
   });
 });
 
+// API to get all active vehicle numbers
+router.get("/active", (req, res) => {
+  const query = `
+    SELECT vehicle_number
+    FROM vehicles
+    WHERE status = 'Active'
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching active vehicles:", err);
+      res.status(500).send("Error fetching active vehicles.");
+      return;
+    }
+
+    res.json(results);
+  });
+});
+
 module.exports = router;

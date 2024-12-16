@@ -22,6 +22,10 @@ const DetailDriver = () => {
     contact: "",
   });
 
+  const [vehicleNumbers, setVehicleNumbers] = useState([]);
+  const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
+  const [vehicleFetchError, setVehicleFetchError] = useState(null);
+
   const showSuccess = (message) => {
     setSuccessMessage(message);
     setShowSuccessModal(true);
@@ -33,6 +37,27 @@ const DetailDriver = () => {
   useEffect(() => {
     fetchDrivers();
   }, []);
+
+  const handleVehicleDropdownClick = async () => {
+    setIsLoadingVehicles(true);
+    setVehicleFetchError(null);
+
+    try {
+      const response = await axios.get(
+        "http://localhost:10000/api/vehicle/active"
+      );
+
+      // Use the data as-is since it matches the expected format
+      const vehicleData = response.data;
+
+      setVehicleNumbers(vehicleData);
+    } catch (error) {
+      setVehicleFetchError("Failed to fetch vehicles' data.");
+      console.error("Error fetching vehicles' data:", error);
+    } finally {
+      setIsLoadingVehicles(false);
+    }
+  };
 
   useEffect(() => {
     const filtered = drivers.filter(
@@ -267,15 +292,27 @@ const DetailDriver = () => {
                 onChange={handleInputChange}
                 required
               />
-              <input
-                type="text"
+              <select
                 name="vehicle_number"
-                placeholder="Vehicle Number"
-                value={newDriver.vehicle_no}
+                value={newDriver.vehicle_number}
                 onChange={handleInputChange}
+                onClick={handleVehicleDropdownClick}
                 required
-                readOnly={isEditing}
-              />
+              >
+                <option value="">Select Vehicle Number</option>
+                {isLoadingVehicles ? (
+                  <option>Loading...</option>
+                ) : vehicleFetchError ? (
+                  <option>{vehicleFetchError}</option>
+                ) : (
+                  vehicleNumbers.map((vehicle) => (
+                    <option key={vehicle.vehicle_number} value={vehicle.vehicle_number}>
+                      {vehicle.vehicle_number}
+                    </option>
+                  ))
+                )}
+              </select>
+              
               <div className="modal-buttons">
                 <button type="submit" className="modal-submit-button">
                   {isEditing ? "Update" : "Add"}
