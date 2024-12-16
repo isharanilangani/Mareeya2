@@ -228,14 +228,6 @@ const DetailVehicle = () => {
               />
               <input
                 type="text"
-                name="driver_name"
-                placeholder="Driver Name"
-                value={newVehicle.driver_name}
-                onChange={handleInputChange}
-                required
-              />
-              <input
-                type="text"
                 name="type"
                 placeholder="Vehicle Type"
                 value={newVehicle.type}
@@ -311,7 +303,6 @@ const DetailVehicle = () => {
             <thead>
               <tr>
                 <th>Vehicle Number</th>
-                <th>Driver Name</th>
                 <th>Vehicle Type</th>
                 <th>Brand</th>
                 <th>Status</th>
@@ -322,7 +313,6 @@ const DetailVehicle = () => {
               {filteredVehicles.map((vehicle) => (
                 <tr key={vehicle.id}>
                   <td>{vehicle.vehicle_number}</td>
-                  <td>{vehicle.driver_name}</td>
                   <td>{vehicle.type}</td>
                   <td>{vehicle.brand}</td>
                   <td>{vehicle.status}</td>
