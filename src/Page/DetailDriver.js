@@ -335,7 +335,7 @@ const DetailDriver = () => {
                   <td>{driver.name}</td>
                   <td>{driver.license_number}</td>
                   <td>{driver.contact}</td>
-                  <td>{driver.vehicle_no}</td>
+                  <td>{driver.vehicle_number}</td>
                   <td>
                     <div className="action">
                       <button

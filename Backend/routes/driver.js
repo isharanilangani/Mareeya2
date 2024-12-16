@@ -80,15 +80,22 @@ router.put("/:vehicle_number", (req, res) => {
 // API to get all drivers
 router.get("/", (req, res) => {
   const query = `
-    SELECT drivers.*, vehicles.vehicle_number AS vehicle_no
-    FROM drivers
-    RIGHT JOIN vehicles ON drivers.vehicle_id = vehicles.vehicle_id
+    SELECT 
+      drivers.*, 
+      driverby.vehicle_id, 
+      vehicles.vehicle_number
+    FROM 
+      drivers
+    LEFT JOIN 
+      driverby ON drivers.driver_id = driverby.driver_id
+    LEFT JOIN 
+      vehicles ON driverby.vehicle_id = vehicles.vehicle_id
   `;
 
   db.query(query, (err, results) => {
     if (err) {
-      console.error("Error fetching vehicles and driver names:", err);
-      res.status(500).send("Error fetching vehicles and driver names.");
+      console.error("Error fetching drivers, vehicle IDs, and vehicle numbers:", err);
+      res.status(500).send("Error fetching details.");
       return;
     }
 
@@ -176,67 +183,39 @@ router.post("/", (req, res) => {
     return res.status(400).json({ message: "All fields are required." });
   }
 
+  // Query to check if the added details already exists
   const vehicleQuery =
-    "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
+    "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ? ";
   db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
     if (err) {
-      console.error(err);
+      console.error("Error checking vehicle existence:", err);
       return res.status(500).json({ message: "Database error occurred." });
     }
 
     if (vehicleRows.length > 0) {
-      // Vehicle exists, update the driver details
-      const vehicleId = vehicleRows[0].vehicle_id;
-      const updateDriverQuery =
-        "UPDATE drivers SET name = ?, contact = ?, license_number = ? WHERE vehicle_id = ?";
+      return res.status(409).json({ message: "Details is already added." });
+    } else {
+      // Query to insert a new vehicle
+      const insertVehicleQuery =
+        "INSERT INTO vehicles (vehicle_number, type, brand, status, purchase_date, created_date) VALUES (?, ?, ?, ?, ?, ?)";
+      const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
+
       db.query(
-        updateDriverQuery,
-        [driver_name, contact, license_number, vehicleId],
-        (err) => {
+        insertVehicleQuery,
+        [vehicle_number, type, brand, status, purchase_date, createdDate],
+        (err, result) => {
           if (err) {
-            console.error(err);
+            console.error("Error inserting vehicle details:", err);
             return res
               .status(500)
-              .json({ message: "Failed to update driver details." });
+              .json({ message: "Failed to insert vehicle details." });
           }
-          return res
-            .status(200)
-            .json({ message: "Driver details updated successfully." });
+          return res.status(201).json({
+            message: "Vehicle details added successfully.",
+            vehicle_id: result.insertId, // Optionally return the inserted ID
+          });
         }
       );
-    } else {
-      // Vehicle doesn't exist, insert a new vehicle and driver
-      const insertVehicleQuery =
-        "INSERT INTO vehicles (vehicle_number) VALUES (?)";
-      db.query(insertVehicleQuery, [vehicle_number], (err, result) => {
-        if (err) {
-          console.error(err);
-          return res
-            .status(500)
-            .json({ message: "Failed to insert vehicle details." });
-        }
-
-        const vehicleId = result.insertId;
-        const insertDriverQuery =
-          "INSERT INTO drivers (name, contact, license_number, vehicle_id) VALUES(?, ?, ?, ?)";
-        db.query(
-          insertDriverQuery,
-          [driver_name, contact, license_number, vehicleId],
-          (err) => {
-            if (err) {
-              console.error(err);
-              return res
-                .status(500)
-                .json({ message: "Failed to insert driver details." });
-            }
-
-            return res.status(200).json({
-              message: "Vehicle and driver details added successfully.",
-              vehicleId,
-            });
-          }
-        );
-      });
     }
   });
 });
