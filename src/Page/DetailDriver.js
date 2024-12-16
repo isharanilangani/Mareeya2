@@ -245,15 +245,6 @@ const DetailDriver = () => {
               </h2>
               <input
                 type="text"
-                name="vehicle_number"
-                placeholder="Vehicle Number"
-                value={newDriver.vehicle_no}
-                onChange={handleInputChange}
-                required
-                readOnly={isEditing}
-              />
-              <input
-                type="text"
                 name="name"
                 placeholder="Driver Name"
                 value={newDriver.name}
@@ -275,6 +266,15 @@ const DetailDriver = () => {
                 value={newDriver.contact}
                 onChange={handleInputChange}
                 required
+              />
+              <input
+                type="text"
+                name="vehicle_number"
+                placeholder="Vehicle Number"
+                value={newDriver.vehicle_no}
+                onChange={handleInputChange}
+                required
+                readOnly={isEditing}
               />
               <div className="modal-buttons">
                 <button type="submit" className="modal-submit-button">
