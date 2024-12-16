@@ -322,20 +322,20 @@ const DetailDriver = () => {
           <table className="Detail-table">
             <thead>
               <tr>
-                <th>Vehicle Number</th>
                 <th>Driver Name</th>
                 <th>license Number</th>
                 <th>Contact No</th>
+                <th>Vehicle Numbers</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredDrivers.map((driver) => (
                 <tr key={driver.id}>
-                  <td>{driver.vehicle_no}</td>
                   <td>{driver.name}</td>
                   <td>{driver.license_number}</td>
                   <td>{driver.contact}</td>
+                  <td>{driver.vehicle_no}</td>
                   <td>
                     <div className="action">
                       <button
