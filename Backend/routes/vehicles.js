@@ -9,7 +9,14 @@ router.put("/:vehicle_id", (req, res) => {
   const { vehicle_number, type, brand, purchase_date, status } = req.body;
 
   // Ensure all required fields are provided
-  if (!vehicle_id || !vehicle_number || !type || !brand || !status || !purchase_date) {
+  if (
+    !vehicle_id ||
+    !vehicle_number ||
+    !type ||
+    !brand ||
+    !status ||
+    !purchase_date
+  ) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -22,24 +29,55 @@ router.put("/:vehicle_id", (req, res) => {
     }
 
     if (vehicleRows.length > 0) {
-      // Update vehicle details
-      const updateVehicleQuery =
-        "UPDATE vehicles SET vehicle_number = ?, type = ?, brand = ?, purchase_date = ?, status = ?, created_date = ? WHERE vehicle_id = ?";
-      const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
-
+      // Check if the vehicle number is already in use by another vehicle
+      const checkVehicleNumberQuery =
+        "SELECT * FROM vehicles WHERE vehicle_number = ? AND vehicle_id != ?";
       db.query(
-        updateVehicleQuery,
-        [vehicle_number, type, brand, purchase_date, status, createdDate, vehicle_id],
-        (err) => {
+        checkVehicleNumberQuery,
+        [vehicle_number, vehicle_id],
+        (err, result) => {
           if (err) {
-            console.error("Update error:", err);
-            return res.status(500).json({ message: "Failed to update vehicle details." });
+            console.error("Database error:", err);
+            return res
+              .status(500)
+              .json({ message: "Database error occurred." });
           }
 
-          res.status(200).json({
-            message: "Vehicle details updated successfully.",
-            vehicle_id,
-          });
+          if (result.length > 0) {
+            return res
+              .status(400)
+              .json({ message: "The vehicle number is already in use." });
+          }
+          // Update vehicle details
+          const updateVehicleQuery =
+            "UPDATE vehicles SET vehicle_number = ?, type = ?, brand = ?, purchase_date = ?, status = ?, created_date = ? WHERE vehicle_id = ?";
+          const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
+
+          db.query(
+            updateVehicleQuery,
+            [
+              vehicle_number,
+              type,
+              brand,
+              purchase_date,
+              status,
+              createdDate,
+              vehicle_id,
+            ],
+            (err) => {
+              if (err) {
+                console.error("Update error:", err);
+                return res
+                  .status(500)
+                  .json({ message: "Failed to update vehicle details." });
+              }
+
+              res.status(200).json({
+                message: "Vehicle details updated successfully.",
+                vehicle_id,
+              });
+            }
+          );
         }
       );
     } else {
@@ -90,7 +128,7 @@ router.post("/", (req, res) => {
       // Query to insert a new vehicle
       const insertVehicleQuery =
         "INSERT INTO vehicles (vehicle_number, type, brand, status, purchase_date, created_date) VALUES (?, ?, ?, ?, ?, ?)";
-        const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
+      const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
       db.query(
         insertVehicleQuery,
@@ -121,8 +159,7 @@ router.delete("/:vehicle_id", (req, res) => {
   }
 
   // First, delete the vehicle associated with the driver by
-  const deleteDriverQuery =
-    "DELETE FROM driverby WHERE vehicle_id = ?";
+  const deleteDriverQuery = "DELETE FROM driverby WHERE vehicle_id = ?";
   db.query(deleteDriverQuery, [vehicle_id], (err) => {
     if (err) {
       return res.status(500).json({ message: "Failed to delete driver." });
