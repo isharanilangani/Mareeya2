@@ -142,7 +142,7 @@ const ManageVehicle = () => {
 
           {/* Date Picker with Calendar Icon */}
           <div className="date-picker-container">
-            <label>Select Date:</label>
+            <label>Select Month:</label>
             <div className="date-picker-wrapper">
               <FaCalendar className="date-picker-icon" />
               <DatePicker

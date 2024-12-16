@@ -86,9 +86,10 @@ const DetailDriverPayments = () => {
   useEffect(() => {
     const filtered = payments.filter(
       (payment) =>
-        payment.licenseNumber &&
-        payment.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase())
+        payment.license_number &&
+        payment.license_number.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    console.log("Filtered Payments:", filtered);
     setFilteredPayments(filtered);
   }, [searchQuery, payments]);
 
@@ -117,7 +118,7 @@ const DetailDriverPayments = () => {
 
     const paymentData = {
       license_number: newPayment.licenseNumber,
-      name : newPayment.driverName,
+      name: newPayment.driverName,
       date: newPayment.paymentDate,
       purpose: newPayment.paymentPurpose,
       amount: isNaN(fullCost) ? 0 : fullCost,
