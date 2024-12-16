@@ -5,10 +5,10 @@ const router = express.Router();
 // Add or Update Vehicle Repair Record
 router.put("/:license_number/:date", (req, res) => {
   const { license_number, date } = req.params;
-  const { description, amount } = req.body;
+  const { purpose, amount } = req.body;
 
   // Ensure all required fields are provided
-  if (!license_number || !date || !description || !amount) {
+  if (!license_number || !date || !purpose || !amount) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -49,7 +49,7 @@ router.put("/:license_number/:date", (req, res) => {
           "UPDATE payments SET purpose = ?, amount = ? WHERE payment_id = ? AND date = ?";
         db.query(
           updateRepairQuery,
-          [description, amount, repairId, date],
+          [purpose, amount, repairId, date],
           (err) => {
             if (err) {
               console.error(err);
@@ -68,7 +68,7 @@ router.put("/:license_number/:date", (req, res) => {
           "INSERT INTO payments (driver_id, date, amount, purpose) VALUES (?, ?, ?, ?)";
         db.query(
           insertRepairQuery,
-          [driverId, date, amount, description],
+          [driverId, date, amount, purpose],
           (err) => {
             if (err) {
               console.error(err);
