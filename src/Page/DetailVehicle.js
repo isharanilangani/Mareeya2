@@ -62,20 +62,20 @@ const DetailVehicle = () => {
     e.preventDefault();
     if (isEditing) {
       try {
-        await axios.put(
-          `http://localhost:10000/api/vehicle/${selectedVehicle.vehicle_number}`,
+        const response = await axios.put(
+          `http://localhost:10000/api/vehicle/${selectedVehicle.vehicle_id}`,
           newVehicle
         );
         setVehicles((prevVehicles) =>
           prevVehicles.map((vehicle) =>
-            vehicle.vehicle_number === selectedVehicle.vehicle_number
+            vehicle.vehicle_id === selectedVehicle.vehicle_id
               ? { ...vehicle, ...newVehicle }
               : vehicle
           )
         );
-        showSuccess("Vehicle updated successfully!");
+        showSuccess(response.data.message || "Vehicle updated successfully!");
       } catch (error) {
-        console.error("Error updating vehicle", error);
+        showSuccess(error.response?.data?.message || "Failed to update vehicle.");
       }
     } else {
       try {
@@ -85,9 +85,9 @@ const DetailVehicle = () => {
         );
         setVehicles([...vehicles, response.data]);
         fetchVehicles();
-        showSuccess("Vehicle added successfully!");
+        showSuccess(response.data.message || "Vehicle added successfully!");
       } catch (error) {
-        console.error("Error adding new vehicle", error);
+        showSuccess(error.response?.data?.message || "Failed to add vehicle.");
       }
     }
     resetModal();
@@ -226,7 +226,6 @@ const DetailVehicle = () => {
                 value={newVehicle.vehicle_number}
                 onChange={handleInputChange}
                 required
-                readOnly={isEditing}
               />
               <input
                 type="text"
