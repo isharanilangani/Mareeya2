@@ -162,18 +162,28 @@ router.delete("/:vehicle_id", (req, res) => {
   const deleteDriverQuery = "DELETE FROM driverby WHERE vehicle_id = ?";
   db.query(deleteDriverQuery, [vehicle_id], (err) => {
     if (err) {
-      return res.status(500).json({ message: "Failed to delete driver." });
+      return res
+        .status(500)
+        .json({ message: "Failed to delete vehicle in driver by table." });
     }
 
-    const deleteVehicleQuery = "DELETE FROM vehicles WHERE vehicle_id = ?";
-    db.query(deleteVehicleQuery, [vehicle_id], (err) => {
+    // second, delete the vehicle associated with the expenses by
+    const deleteExpensesQuery = "DELETE FROM expenses WHERE vehicle_id = ?";
+    db.query(deleteExpensesQuery, [vehicle_id], (err) => {
       if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Failed to delete vehicle." });
+        return res.status(500).json({ message: "Failed to delete expenses." });
       }
 
-      res.status(200).json({
-        message: "Vehicle deleted successfully.",
+      const deleteVehicleQuery = "DELETE FROM vehicles WHERE vehicle_id = ?";
+      db.query(deleteVehicleQuery, [vehicle_id], (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Failed to delete vehicle." });
+        }
+
+        res.status(200).json({
+          message: "Vehicle deleted successfully.",
+        });
       });
     });
   });
