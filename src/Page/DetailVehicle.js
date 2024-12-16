@@ -305,6 +305,7 @@ const DetailVehicle = () => {
                 <th>Vehicle Number</th>
                 <th>Vehicle Type</th>
                 <th>Brand</th>
+                <th>Purchase Date</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -315,6 +316,7 @@ const DetailVehicle = () => {
                   <td>{vehicle.vehicle_number}</td>
                   <td>{vehicle.type}</td>
                   <td>{vehicle.brand}</td>
+                  <td>{vehicle.purchase_date}</td>
                   <td>{vehicle.status}</td>
                   <td>
                     <div className="action">
