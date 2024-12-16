@@ -20,6 +20,7 @@ const DetailVehicle = () => {
     type: "",
     driver_name: "",
     brand: "",
+    purchase_date: "",
     status: "Active",
   });
 
@@ -103,6 +104,7 @@ const DetailVehicle = () => {
       type: "",
       driver_name: "",
       brand: "",
+      purchase_date: "",
       status: "Active",
     });
     setSelectedVehicle(null);
@@ -239,6 +241,14 @@ const DetailVehicle = () => {
                 name="brand"
                 placeholder="Brand"
                 value={newVehicle.brand}
+                onChange={handleInputChange}
+                required
+              />
+              <input
+                type="date"
+                name="purchase_date"
+                placeholder="Purchase Date"
+                value={newVehicle.purchase_date}
                 onChange={handleInputChange}
                 required
               />
