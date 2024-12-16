@@ -48,13 +48,13 @@ const DetailDriverPayments = () => {
         "http://localhost:10000/api/driver/name"
       );
 
-      // Extract unique names
-      const uniqueNames = Array.from(new Set(response.data.map((d) => d.name)));
+      // Use the data as-is since it matches the expected format
+      const driverData = response.data;
 
-      setDriverNames(uniqueNames);
+      setDriverNames(driverData);
     } catch (error) {
-      setDriverFetchError("Failed to fetch drivers' names.");
-      console.error("Error fetching drivers' names:", error);
+      setDriverFetchError("Failed to fetch drivers' data.");
+      console.error("Error fetching drivers' data:", error);
     } finally {
       setIsLoadingDrivers(false);
     }
@@ -66,15 +66,22 @@ const DetailDriverPayments = () => {
       const response = await axios.get(
         "http://localhost:10000/api/driver/payment"
       );
+      console.log("API Response:", response.data); // Debugging the response
+
       const validPayments = response.data.filter(
-        (payment) => payment.name
+        (payment) => payment.payment_id
       );
+
       setPayments(validPayments);
       setFilteredPayments(validPayments);
     } catch (error) {
-      console.error("Error fetching payments data", error);
+      console.error("Error fetching driver payment data", error);
     }
   };
+
+  useEffect(() => {
+    console.log("Filtered Payments:", filteredPayments);
+  }, [filteredPayments]);
 
   useEffect(() => {
     const filtered = payments.filter(
@@ -287,44 +294,51 @@ const DetailDriverPayments = () => {
               <h2 className="modal-title">
                 {isEditing ? "Update Payment Details" : "Add Payment Details"}
               </h2>
-
               {/* Driver Name Dropdown */}
               <select
-                value={newPayment.driverName}
-                onChange={(e) =>
-                  setNewPayment({ ...newPayment, driverName: e.target.value })
-                }
+                value={newPayment.licenseNumber} // Bind to `licenseNumber`
+                onChange={(e) => {
+                  const selectedDriver = driverName.find(
+                    (driver) => driver.license_number === e.target.value
+                  );
+                  setNewPayment({
+                    ...newPayment,
+                    licenseNumber: selectedDriver?.license_number || "",
+                    driverName: selectedDriver?.name || "",
+                  });
+                }}
                 onClick={handleDriverDropdownClick} // Fetch data on click
                 required
                 disabled={isEditing} // Disable when editing
               >
-                <option value="">Select Driver Name</option>
+                <option value="">Select License Number</option>
                 {isLoadingDrivers && <option>Loading...</option>}
                 {driverFetchError && (
                   <option disabled>{driverFetchError}</option>
                 )}
                 {!isLoadingDrivers &&
                   !driverFetchError &&
-                  driverName.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
+                  driverName
+                    .filter((driver) => driver.license_number !== "None") // Exclude "None" values
+                    .map((driver) => (
+                      <option key={driver.name} value={driver.license_number}>
+                        {driver.license_number}
+                      </option>
+                    ))}
               </select>
 
-              {/* License number */}
               <input
                 type="text"
-                placeholder="License Number"
-                value={newPayment.licenseNumber}
+                placeholder="Driver Name"
+                value={newPayment.driverName}
                 onChange={(e) =>
                   setNewPayment({
                     ...newPayment,
-                    licenseNumber: e.target.value,
+                    driverName: e.target.value,
                   })
                 }
                 required
-                disabled
+                disabled // Make the field read-only to prevent manual edits
               />
 
               {/* Payment Date */}
@@ -337,7 +351,6 @@ const DetailDriverPayments = () => {
                 }
                 required
               />
-
               {/* Payment Purpose */}
               <input
                 type="text"
@@ -351,7 +364,6 @@ const DetailDriverPayments = () => {
                 }
                 required
               />
-
               {/* Payment Amount */}
               <div className="cost-inputs">
                 <span>Rs.</span>
@@ -373,7 +385,6 @@ const DetailDriverPayments = () => {
                   required
                 />
               </div>
-
               <div className="modal-buttons">
                 <button type="submit" className="modal-submit-button">
                   {isEditing ? "Update" : "Add"}
@@ -431,13 +442,13 @@ const DetailDriverPayments = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredPayments.map((payment) => (
-                <tr key={payment.id}>
+              {payments.map((payment) => (
+                <tr key={payment.payment_id}>
                   <td>{payment.name}</td>
                   <td>{payment.date}</td>
                   <td>{payment.purpose}</td>
                   <td>{payment.license_number}</td>
-                  <td>{payment.amount}</td>
+                  <td>{payment.amount}.00 </td>
                   <td>
                     <div className="action">
                       <button
