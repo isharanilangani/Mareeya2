@@ -203,12 +203,12 @@ const DetailDriverPayments = () => {
   const confirmDelete = async () => {
     try {
       await axios.delete(
-        `http://localhost:10000/api/driver/payment/${paymentToDelete.licenseNumber}/${paymentToDelete.date}`
+        `http://localhost:10000/api/driver/payment/${paymentToDelete.license_number}/${paymentToDelete.date}`
       );
       setPayments((prevPayments) =>
         prevPayments.filter(
           (payment) =>
-            payment.licenseNumber !== paymentToDelete.licenseNumber &&
+            payment.licenseNumber !== paymentToDelete.license_number &&
             payment.date !== paymentToDelete.date
         )
       );
