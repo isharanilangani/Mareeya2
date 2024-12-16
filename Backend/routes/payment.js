@@ -107,9 +107,9 @@ router.get("/", (req, res) => {
 
 // Add a New Repair Record
 router.post("/", (req, res) => {
-  const { license_number, date, description, amount} = req.body;
+  const { license_number, date, purpose, amount, name} = req.body;
 
-  if (!license_number || !date || !description || !amount ) {
+  if (!license_number || !date || !purpose || !amount || !name ) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -150,7 +150,7 @@ router.post("/", (req, res) => {
           "UPDATE payments SET purpose = ?, amount = ? WHERE payment_id = ? AND date= ? ";
         db.query(
           updateRepairQuery,
-          [description, amount, paymentId, date],
+          [purpose, amount, paymentId, date],
           (err) => {
             if (err) {
               console.error(err);
@@ -169,7 +169,7 @@ router.post("/", (req, res) => {
           "INSERT INTO payments (driver_id, date, purpose, amount) VALUES (?, ?, ?, ?)";
         db.query(
           insertRepairQuery,
-          [driverId, date, description, amount],
+          [driverId, date, purpose, amount],
           (err) => {
             if (err) {
               console.error(err);

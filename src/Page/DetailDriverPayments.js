@@ -117,9 +117,9 @@ const DetailDriverPayments = () => {
 
     const paymentData = {
       license_number: newPayment.licenseNumber,
-      name: newPayment.driverName,
+      name : newPayment.driverName,
       date: newPayment.paymentDate,
-      description: newPayment.paymentDetails,
+      purpose: newPayment.paymentPurpose,
       amount: isNaN(fullCost) ? 0 : fullCost,
     };
 
