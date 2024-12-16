@@ -67,7 +67,7 @@ const DetailDriverPayments = () => {
         "http://localhost:10000/api/driver/payment"
       );
       const validPayments = response.data.filter(
-        (payment) => payment.license_number
+        (payment) => payment.name
       );
       setPayments(validPayments);
       setFilteredPayments(validPayments);
@@ -431,7 +431,7 @@ const DetailDriverPayments = () => {
               </tr>
             </thead>
             <tbody>
-              {payments.map((payment) => (
+              {filteredPayments.map((payment) => (
                 <tr key={payment.id}>
                   <td>{payment.name}</td>
                   <td>{payment.date}</td>
