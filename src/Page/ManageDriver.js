@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -15,6 +15,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import "./ManageDetails.css";
 import "./Dashboard.css";
+import axios from "axios";
 
 // Register required Chart.js components
 ChartJS.register(
@@ -27,38 +28,29 @@ ChartJS.register(
 );
 
 const ManageDriver = () => {
-  const drivers = [
-    { id: 1, name: "John Doe", license: "LIC12345" },
-    { id: 2, name: "Jane Smith", license: "LIC67890" },
-    { id: 3, name: "Mark Johnson", license: "LIC54321" },
-  ];
-
+  const [drivers, setDrivers] = useState([]); // State for drivers
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Example data for the chart
-  const chartData = {
-    labels: [
-      "2024-01-01",
-      "2024-01-02",
-      "2024-01-03",
-      "2024-01-04",
-      "2024-01-05",
-    ],
-    datasets: [
-      {
-        label: "Payments",
-        data: [1200, 1300, 1250, 1400, 1500], // Example payment data
-        backgroundColor: "rgba(255, 99, 132, 0.2)",
-        borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+  // Fetch drivers from the API
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:10000/api/driver/name"
+        );
+        const fetchedDrivers = response.data; // Assume API returns an array of drivers
+        setDrivers(fetchedDrivers);
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      }
+    };
+
+    fetchDrivers();
+  }, []);
 
   const handleSearch = () => {
-    // Toggle modal visibility
     setShowModal(true);
   };
 
@@ -72,6 +64,25 @@ const ManageDriver = () => {
 
   const toggleDetails = () => {
     setIsDetailsOpen((prev) => !prev);
+  };
+
+  const chartData = {
+    labels: [
+      "2024-01-01",
+      "2024-01-02",
+      "2024-01-03",
+      "2024-01-04",
+      "2024-01-05",
+    ],
+    datasets: [
+      {
+        label: "Payments",
+        data: [1200, 1300, 1250, 1400, 1500],
+        backgroundColor: "rgba(255, 99, 132, 0.2)",
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+      },
+    ],
   };
 
   return (
@@ -135,13 +146,13 @@ const ManageDriver = () => {
               <option value="">Select Driver</option>
               {drivers.map((driver) => (
                 <option key={driver.id} value={driver.name}>
-                  {driver.name} - {driver.license}
+                  {driver.name} - {driver.license_number}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Date Picker with Calendar Icon */}
+          {/* Date Picker */}
           <div className="date-picker-container">
             <label>Select Month:</label>
             <div className="date-picker-wrapper">
@@ -171,7 +182,7 @@ const ManageDriver = () => {
         </div>
       </div>
 
-      {/* Custom Modal for displaying selected details and bar chart */}
+      {/* Modal */}
       {showModal && (
         <div
           className="custom-modal-overlay"
@@ -200,7 +211,7 @@ const ManageDriver = () => {
               </h5>
               <h5>Total Payments: 0 LKR</h5>
 
-              {/* Bar Chart for Payments */}
+              {/* Bar Chart */}
               <Bar data={chartData} options={{ responsive: true }} />
             </div>
           </div>
