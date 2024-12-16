@@ -150,7 +150,7 @@ const DetailVehicleRepair = () => {
     setSelectedRepair(repair); // Set the selected repair
     setNewRepair({
       vehicleNumber: repair.vehicle_number,
-      repairDate: repair.date, // Ensure the date is formatted correctly
+      repairDate: repair.date, 
       repairDetails: repair.description,
       costAmount: Math.floor(repair.amount), // Extract the whole number part
       costCents: ((repair.amount % 1) * 100).toFixed(0).padStart(2, "0"), // Extract the cents part
@@ -308,6 +308,7 @@ const DetailVehicleRepair = () => {
                   setNewRepair({ ...newRepair, repairDate: e.target.value })
                 }
                 required
+                disabled={isEditing}
               />
               <input
                 type="text"

@@ -348,6 +348,7 @@ const DetailDriverPayments = () => {
                   setNewPayment({ ...newPayment, paymentDate: e.target.value })
                 }
                 required
+                disabled={isEditing}
               />
               {/* Payment Purpose */}
               <input
