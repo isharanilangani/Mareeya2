@@ -186,7 +186,7 @@ const DetailVehicleRepair = () => {
   const confirmDelete = async () => {
     try {
       const response = await axios.delete(
-        `http://localhost:10000/api/vehicle/repair/${repairToDelete.vehicle_number}/${repairToDelete.date}`
+        `http://localhost:10000/api/vehicle/repair/${repairToDelete.vehicle_number}/${repairToDelete.payment_date}`
       );
       setRepairs((prevRepairs) =>
         prevRepairs.filter(

@@ -182,7 +182,7 @@ router.delete("/:vehicle_number/:date", (req, res) => {
     const vehicle_id = vehicleRows[0].vehicle_id;
 
     // Check if a repair record exists for the vehicle and date
-    const repairQuery = "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND date = ?";
+    const repairQuery = "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND payment_date = ?";
     db.query(repairQuery, [vehicle_id, date], (err, repairRows) => {
       if (err) {
         console.error(err);
