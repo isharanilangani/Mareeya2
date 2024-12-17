@@ -16,10 +16,10 @@ const DetailDriver = () => {
   const [, setSelectedDriver] = useState(null);
   const [driverToDelete, setDriverToDelete] = useState(null);
   const [newDriver, setNewDriver] = useState({
-    vehicle_number: "",
     name: "",
     license_number: "",
     contact: "",
+    vehicle_numbers: [""],
   });
 
   const [vehicleNumbers, setVehicleNumbers] = useState([]);
@@ -37,27 +37,6 @@ const DetailDriver = () => {
   useEffect(() => {
     fetchDrivers();
   }, []);
-
-  const handleVehicleDropdownClick = async () => {
-    setIsLoadingVehicles(true);
-    setVehicleFetchError(null);
-
-    try {
-      const response = await axios.get(
-        "http://localhost:10000/api/vehicle/active"
-      );
-
-      // Use the data as-is since it matches the expected format
-      const vehicleData = response.data;
-
-      setVehicleNumbers(vehicleData);
-    } catch (error) {
-      setVehicleFetchError("Failed to fetch vehicles' data.");
-      console.error("Error fetching vehicles' data:", error);
-    } finally {
-      setIsLoadingVehicles(false);
-    }
-  };
 
   useEffect(() => {
     const filtered = drivers.filter(
@@ -85,30 +64,21 @@ const DetailDriver = () => {
     e.preventDefault();
     if (isEditing) {
       try {
-        if (!newDriver.vehicle_no) {
-          console.error("Vehicle number is missing for update!");
-          return;
-        }
-
         const payload = {
           driver_name: newDriver.name,
           contact: newDriver.contact,
           license_number: newDriver.license_number,
+          vehicle_numbers: newDriver.vehicle_numbers, // Send array of vehicle numbers
         };
 
-        console.log(
-          "Updating driver with vehicle number:",
-          newDriver.vehicle_no
-        );
-
         await axios.put(
-          `http://localhost:10000/api/driver/${newDriver.vehicle_no}`,
+          `http://localhost:10000/api/driver/${newDriver.vehicle_numbers[0]}`, // Use first vehicle number as the identifier
           payload
         );
 
         setDrivers((prevDrivers) =>
           prevDrivers.map((driver) =>
-            driver.vehicle_number === newDriver.vehicle_no
+            driver.vehicle_number === newDriver.vehicle_numbers[0]
               ? { ...driver, ...payload }
               : driver
           )
@@ -121,13 +91,11 @@ const DetailDriver = () => {
     } else {
       try {
         const addDriver = {
-          vehicle_number: newDriver.vehicle_number,
+          vehicle_numbers: newDriver.vehicle_numbers,
           driver_name: newDriver.name,
           license_number: newDriver.license_number,
           contact: newDriver.contact,
         };
-
-        console.log("Adding new driver:", addDriver);
 
         const response = await axios.post(
           "http://localhost:10000/api/driver",
@@ -144,9 +112,39 @@ const DetailDriver = () => {
     resetModal();
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewDriver({ ...newDriver, [name]: value });
+  const handleVehicleDropdownClick = async (index) => {
+    const updatedVehicleNumbers = [...newDriver.vehicle_numbers];
+    updatedVehicleNumbers[index] = ""; // Reset the selected vehicle number when a dropdown is opened.
+    setNewDriver({ ...newDriver, vehicle_numbers: updatedVehicleNumbers });
+
+    setIsLoadingVehicles(true);
+    setVehicleFetchError(null);
+
+    try {
+      const response = await axios.get(
+        "http://localhost:10000/api/vehicle/active"
+      );
+      setVehicleNumbers(response.data);
+    } catch (error) {
+      setVehicleFetchError("Failed to fetch vehicles' data.");
+      console.error("Error fetching vehicles' data:", error);
+    } finally {
+      setIsLoadingVehicles(false);
+    }
+  };
+
+  const handleInputChange = (e, index) => {
+    const { value } = e.target;
+    const updatedVehicleNumbers = [...newDriver.vehicle_numbers];
+    updatedVehicleNumbers[index] = value;
+    setNewDriver({ ...newDriver, vehicle_numbers: updatedVehicleNumbers });
+  };
+
+  const addVehicleField = () => {
+    setNewDriver((prevState) => ({
+      ...prevState,
+      vehicle_numbers: [...prevState.vehicle_numbers, ""],
+    }));
   };
 
   const resetModal = () => {
@@ -292,26 +290,42 @@ const DetailDriver = () => {
                 onChange={handleInputChange}
                 required
               />
-              <select
-                name="vehicle_number"
-                value={newDriver.vehicle_number}
-                onChange={handleInputChange}
-                onClick={handleVehicleDropdownClick}
-                required
+
+              {newDriver.vehicle_numbers.map((vehicle, index) => (
+                <div key={index}>
+                  <select
+                    name="vehicle_number"
+                    value={newDriver.vehicle_numbers[index]}
+                    onChange={(e) => handleInputChange(e, index)}
+                    onClick={() => handleVehicleDropdownClick(index)}
+                    required
+                  >
+                    <option value="">Select Vehicle Number</option>
+                    {isLoadingVehicles ? (
+                      <option>Loading...</option>
+                    ) : vehicleFetchError ? (
+                      <option>{vehicleFetchError}</option>
+                    ) : (
+                      vehicleNumbers.map((vehicle) => (
+                        <option
+                          key={vehicle.vehicle_number}
+                          value={vehicle.vehicle_number}
+                        >
+                          {vehicle.vehicle_number}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addVehicleField}
+                className="add-vehicle-button"
               >
-                <option value="">Select Vehicle Number</option>
-                {isLoadingVehicles ? (
-                  <option>Loading...</option>
-                ) : vehicleFetchError ? (
-                  <option>{vehicleFetchError}</option>
-                ) : (
-                  vehicleNumbers.map((vehicle) => (
-                    <option key={vehicle.vehicle_number} value={vehicle.vehicle_number}>
-                      {vehicle.vehicle_number}
-                    </option>
-                  ))
-                )}
-              </select>
+                Add More Vehicle Number
+              </button>
 
               <div className="modal-buttons">
                 <button type="submit" className="modal-submit-button">
