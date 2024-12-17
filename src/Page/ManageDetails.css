@@ -126,15 +126,8 @@
   .custom-modal-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 20px;
-  }
-  
-  .custom-modal-header h5 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
   }
   
   .close-modal-btn {
@@ -145,6 +138,7 @@
     padding: 6px 12px;
     border-radius: 4px;
     cursor: pointer;
+    margin-left: 0;
   }
   
   .close-modal-btn:hover {
@@ -160,5 +154,41 @@
   /* Chart container styling */
   .custom-modal-body .chart-container {
     margin-top: 20px;
+  }
+  
+  .Detail-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  
+  .Detail-table {
+    font-size: 15px;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+  }
+  
+  .Detail-table th,
+  .Detail-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .Detail-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .Detail-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .Detail-table tr:hover {
+    background-color: #f1f1f1;
   }
   

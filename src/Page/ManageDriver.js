@@ -57,26 +57,52 @@ const ManageDriver = () => {
     }
 
     try {
-      const formattedDate = selectedDate.toISOString().slice(0, 7);
-      const response = await axios.get(
-        `http://localhost:10000/api/driver/manage/total`,
-        {
-          params: { driver: selectedDriver, date: formattedDate },
-        }
-      );
-      setTotalPayments(response.data.total || 0);
+      // Get the selected month's start and end date
+      const startDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        1
+      ); // First day of the selected month
+      const endDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + 1,
+        0
+      ); // Last day of the selected month
 
-      const detailsResponse = await axios.get(
-        "http://localhost:10000/api/driver/manage/payments",
+      // Format the dates to 'YYYY-MM-DD'
+      const formattedStartDate = startDate.toISOString().split("T")[0]; // Get the 'YYYY-MM-DD' format
+      const formattedEndDate = endDate.toISOString().split("T")[0]; // Get the 'YYYY-MM-DD' format
+
+      // Fetch payment details
+      const response = await axios.get(
+        "http://localhost:10000/api/driver/manage/details",
         {
-          params: { driver: selectedDriver, date: formattedDate },
+          params: {
+            license_number: "ABC12345",
+            start_date: "2024-12-01",
+            end_date: "2024-12-31",
+          },
         }
       );
-      setPaymentDetails(detailsResponse.data || []);
+
+      // Assuming the response contains an array of payment details
+      if (response.data.length > 0) {
+        setPaymentDetails(response.data);
+        // Calculate total payments
+        const total = response.data.reduce(
+          (acc, payment) => acc + parseFloat(payment.amount),
+          0
+        );
+        setTotalPayments(total);
+      } else {
+        setPaymentDetails([]);
+        setTotalPayments(0);
+      }
+
       setShowModal(true);
     } catch (error) {
-      console.error("Error fetching total payments:", error);
-      showAlertMessage("Failed to fetch total payments. Please try again.");
+      console.error("Error fetching payment details:", error);
+      showAlertMessage("Failed to fetch payment details. Please try again.");
     }
   };
 
@@ -205,7 +231,6 @@ const ManageDriver = () => {
         >
           <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
             <div className="custom-modal-header">
-              <h5>Payment Details</h5>
               <button
                 onClick={() => setShowModal(false)}
                 className="close-modal-btn"
@@ -226,24 +251,26 @@ const ManageDriver = () => {
               </h5>
               <h5>Total Payments: {totalPayments} LKR</h5>
 
-              <table className="payment-details-table">
-                <thead>
-                  <tr>
-                    <th>Payment Date</th>
-                    <th>Payment Purpose</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paymentDetails.map((payment, index) => (
-                    <tr key={index}>
-                      <td>{payment.payment_date}</td>
-                      <td>{payment.payment_purpose}</td>
-                      <td>{payment.amount} LKR</td>
+              <div className="Detail-table-container">
+                <table className="Detail-table">
+                  <thead>
+                    <tr>
+                      <th>Payment Date</th>
+                      <th>Payment Purpose</th>
+                      <th>Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paymentDetails.map((payment, index) => (
+                      <tr key={index}>
+                        <td>{payment.payment_date}</td>
+                        <td>{payment.purpose}</td>
+                        <td>{payment.amount} LKR</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
