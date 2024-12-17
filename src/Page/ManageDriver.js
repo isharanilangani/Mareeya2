@@ -10,7 +10,8 @@ import axios from "axios";
 const ManageDriver = () => {
   const [drivers, setDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState("");
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [totalPayments, setTotalPayments] = useState(0);
   const [paymentDetails, setPaymentDetails] = useState([]);
@@ -51,36 +52,24 @@ const ManageDriver = () => {
   }, []);
 
   const handleSearch = async () => {
-    if (!selectedDriver || !selectedDate) {
-      showAlertMessage("Please select a driver and a date.");
+    if (!selectedDriver || !startDate || !endDate) {
+      showAlertMessage("Please select a driver and a date range.");
       return;
     }
 
     try {
-      // Get the selected month's start and end date
-      const startDate = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        1
-      ); // First day of the selected month
-      const endDate = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth() + 1,
-        0
-      ); // Last day of the selected month
-
-      // Format the dates to 'YYYY-MM-DD'
-      const formattedStartDate = startDate.toISOString().split("T")[0]; // Get the 'YYYY-MM-DD' format
-      const formattedEndDate = endDate.toISOString().split("T")[0]; // Get the 'YYYY-MM-DD' format
+      // Format the start and end dates to 'YYYY-MM-DD'
+      const formattedStartDate = startDate.toISOString().split("T")[0];
+      const formattedEndDate = endDate.toISOString().split("T")[0];
 
       // Fetch payment details
       const response = await axios.get(
         "http://localhost:10000/api/driver/manage/details",
         {
           params: {
-            license_number: "ABC12345",
-            start_date: "2024-12-01",
-            end_date: "2024-12-31",
+            license_number: "ABC12345", // Replace with the selected driver's license number
+            start_date: formattedStartDate,
+            end_date: formattedEndDate,
           },
         }
       );
@@ -193,18 +182,39 @@ const ManageDriver = () => {
             </select>
           </div>
 
-          {/* Date Picker */}
+          {/* Date Picker for Start Date */}
           <div className="date-picker-container">
-            <label>Select Month:</label>
+            <label>Select Start Date:</label>
             <div className="date-picker-wrapper">
               <FaCalendar className="date-picker-icon" />
               <DatePicker
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
-                dateFormat="MMMM yyyy"
-                showMonthYearPicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                dateFormat="yyyy-MM-dd"
                 className="date-picker-input"
-                placeholderText="Select Month & Year"
+                placeholderText="Select Start Date"
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+              />
+            </div>
+          </div>
+
+          {/* Date Picker for End Date */}
+          <div className="date-picker-container">
+            <label>Select End Date:</label>
+            <div className="date-picker-wrapper">
+              <FaCalendar className="date-picker-icon" />
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                dateFormat="yyyy-MM-dd"
+                className="date-picker-input"
+                placeholderText="Select End Date"
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate} // Ensure end date is not before start date
               />
             </div>
           </div>
@@ -241,13 +251,9 @@ const ManageDriver = () => {
             <div className="custom-modal-body">
               <h5>Driver Name: {selectedDriver}</h5>
               <h5>
-                Selected Month:{" "}
-                {selectedDate
-                  ? selectedDate.toLocaleString("default", {
-                      month: "long",
-                      year: "numeric",
-                    })
-                  : "Not selected"}
+                Selected Date Range:{" "}
+                {startDate ? startDate.toLocaleDateString() : "Not selected"} -{" "}
+                {endDate ? endDate.toLocaleDateString() : "Not selected"}
               </h5>
               <h5>Total Payments: {totalPayments} LKR</h5>
 
@@ -261,13 +267,19 @@ const ManageDriver = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {paymentDetails.map((payment, index) => (
-                      <tr key={index}>
-                        <td>{payment.payment_date}</td>
-                        <td>{payment.purpose}</td>
-                        <td>{payment.amount} LKR</td>
+                    {paymentDetails.length > 0 ? (
+                      paymentDetails.map((payment, index) => (
+                        <tr key={index}>
+                          <td>{payment.payment_date}</td>
+                          <td>{payment.purpose}</td>
+                          <td>{payment.amount} LKR</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3">No payment details available.</td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
