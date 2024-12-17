@@ -140,6 +140,7 @@ const DetailVehicleRepair = () => {
         setRepairs([...repairs, { id: response.data.id, ...repairData }]);
         showSuccess(response.data.message || "Repair added successfully!");
       }
+      fetchRepairs();
       resetModal();
     } catch (error) {
       showSuccess(error.response?.data?.message || "Failed to add repairs.");

@@ -155,6 +155,7 @@ const DetailDriverPayments = () => {
         setPayments([...payments, { id: response.data.id, ...paymentData }]);
         showSuccess(response.data.message || "Payments added successfully!");
       }
+      fetchPayments();
       resetModal();
     } catch (error) {
       showSuccess(error.response?.data?.message || "Failed to added payment.");
