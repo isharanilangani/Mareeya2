@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("../config/db");
 const router = express.Router();
+const moment = require("moment");
 
 // Add or Update Vehicle Repair Record
 router.put("/:vehicle_number", (req, res) => {
@@ -132,7 +133,7 @@ router.post("/", (req, res) => {
 
     // Check if a repair record exists for the vehicle and date
     const repairQuery =
-      "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND date = ?";
+      "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND payment_date = ?";
     db.query(repairQuery, [vehicle_id, date], (err, repairRows) => {
       if (err) {
         console.error(err);
@@ -144,32 +145,17 @@ router.post("/", (req, res) => {
       }
 
       if (repairRows.length > 0) {
-        // Repair record exists, update it
-        const repairId = repairRows[0].expense_id;
-        const updateRepairQuery =
-          "UPDATE expenses SET description = ?, amount = ?, date =? WHERE expense_id = ?";
-        db.query(
-          updateRepairQuery,
-          [description, amount, date, repairId],
-          (err) => {
-            if (err) {
-              console.error(err);
-              return res
-                .status(500)
-                .json({ message: "Failed to update repair record." });
-            }
-            res
-              .status(200)
-              .json({ message: "Repair record updated successfully." });
-          }
-        );
+        return res
+          .status(400) // Use 400 for client error (duplicate entry)
+          .json({ message: "Repair details already added for this date." });
       } else {
         // Insert a new repair record
+        const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
         const insertRepairQuery =
-          "INSERT INTO expenses (vehicle_id, date, description, amount) VALUES (?, ?, ?, ?)";
+          "INSERT INTO expenses (vehicle_id, payment_date, description, amount, created_date) VALUES (?, ?, ?, ?, ?)";
         db.query(
           insertRepairQuery,
-          [vehicle_id, date, description, amount],
+          [vehicle_id, date, description, amount, createdDate],
           (err) => {
             if (err) {
               console.error(err);

@@ -113,7 +113,7 @@ const DetailVehicleRepair = () => {
         try {
           // Update repair
           console.log("Sending data:", newRepair);
-          await axios.put(
+          const response = await axios.put(
             `http://localhost:10000/api/vehicle/repair/${newRepair.vehicleNumber}/${newRepair.repairDate}`,
             repairData
           );
@@ -138,11 +138,11 @@ const DetailVehicleRepair = () => {
           repairData
         );
         setRepairs([...repairs, { id: response.data.id, ...repairData }]);
-        showSuccess("Repair added successfully!");
+        showSuccess(response.data.message || "Repair added successfully!");
       }
       resetModal();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      showSuccess(error.response?.data?.message || "Failed to add repairs.");
     }
   };
 
@@ -185,7 +185,7 @@ const DetailVehicleRepair = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(
+      const response = await axios.delete(
         `http://localhost:10000/api/vehicle/repair/${repairToDelete.vehicle_number}/${repairToDelete.date}`
       );
       setRepairs((prevRepairs) =>
@@ -401,7 +401,7 @@ const DetailVehicleRepair = () => {
               {filteredRepairs.map((repair) => (
                 <tr key={repair.id}>
                   <td>{repair.vehicle_number}</td>
-                  <td>{repair.date}</td>
+                  <td>{repair.payment_date}</td>
                   <td>{repair.description}</td>
                   <td>{repair.amount.toFixed(2)}</td>
                   <td>

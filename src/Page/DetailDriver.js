@@ -153,7 +153,7 @@ const DetailDriver = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(
+      const response = await axios.delete(
         `http://localhost:10000/api/driver/${driverToDelete.driver_id}`
       );
       setDrivers(
@@ -161,9 +161,9 @@ const DetailDriver = () => {
           (driver) => driver.driver_id !== driverToDelete.driver_id
         )
       );
-      showSuccess("Driver deleted successfully!");
+      showSuccess(response.data.message || "Driver deleted successfully!");
     } catch (error) {
-      console.error("Error deleting driver", error);
+      showSuccess(error.response?.data?.message || "Failed to delete drivers.");
     }
     setShowDeleteConfirmation(false);
   };
