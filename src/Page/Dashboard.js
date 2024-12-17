@@ -86,7 +86,7 @@ function Dashboard() {
               className="dashboard-button"
               onClick={() => navigate("/manageVehicle")}
             >
-              Manage Vehicles
+              View Vehicles
             </button>
           </div>
 
@@ -102,7 +102,7 @@ function Dashboard() {
               className="dashboard-button"
               onClick={() => navigate("/manageDriver")}
             >
-              Manage Drivers
+              View Drivers
             </button>
           </div>
         </div>
