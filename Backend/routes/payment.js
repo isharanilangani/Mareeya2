@@ -4,84 +4,67 @@ const router = express.Router();
 const moment = require("moment");
 
 // Add or Update Vehicle Repair Record
-router.put("/:license_number/:date", (req, res) => {
-  const { license_number, date } = req.params;
-  const { purpose, amount } = req.body;
+router.put("/:license_number", (req, res) => {
+  const { license_number } = req.params;
+  const { date, purpose, amount } = req.body;
 
-  // Ensure all required fields are provided
+  // Input Validation
   if (!license_number || !date || !purpose || !amount) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
-  // Fetch vehicle_id from vehicle_number
-  const vehicleQuery =
-    "SELECT driver_id FROM drivers WHERE license_number = ?";
-  db.query(vehicleQuery, [license_number], (err, vehicleRows) => {
+  // Step 1: Fetch driver_id from drivers table
+  const driverQuery = "SELECT driver_id FROM drivers WHERE license_number = ?";
+  db.query(driverQuery, [license_number], (err, driverRows) => {
     if (err) {
-      console.error(err);
+      console.error("Error fetching driver:", err);
       return res
         .status(500)
-        .json({ message: "Database error occurred while fetching vehicle." });
+        .json({ message: "Database error occurred while fetching driver." });
     }
 
-    if (vehicleRows.length === 0) {
+    if (driverRows.length === 0) {
       return res.status(404).json({ message: "Driver not found." });
     }
 
-    const driverId = vehicleRows[0].driver_id;
+    const driverId = driverRows[0].driver_id;
 
-    // Check if a repair record exists for the vehicle and date
-    const repairQuery =
-      "SELECT payment_id FROM payments WHERE driver_id = ? AND date = ?";
-    db.query(repairQuery, [driverId, date], (err, repairRows) => {
+    // Step 2: Check if payment record exists for the driver
+    const paymentQuery =
+      "SELECT payment_id FROM payments WHERE driver_id = ?";
+    db.query(paymentQuery, [driverId], (err, paymentRows) => {
       if (err) {
-        console.error(err);
+        console.error("Error fetching payments:", err);
         return res
           .status(500)
-          .json({
-            message: "Database error occurred while checking repair records.",
-          });
+          .json({ message: "Database error occurred while checking payments." });
       }
 
-      if (repairRows.length > 0) {
-        // Repair record exists, update it
-        const repairId = repairRows[0].payment_id;
-        const updateRepairQuery =
-          "UPDATE payments SET purpose = ?, amount = ? WHERE payment_id = ? AND date = ?";
+      if (paymentRows.length > 0) {
+        // Step 3: Update the existing payment record
+        const paymentId = paymentRows[0].payment_id;
+        const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
+
+        const updatePaymentQuery =
+          "UPDATE payments SET purpose = ?, amount = ?, payment_date = ?, created_date = ? WHERE payment_id = ?";
         db.query(
-          updateRepairQuery,
-          [purpose, amount, repairId, date],
+          updatePaymentQuery,
+          [purpose, amount, date, createdDate, paymentId],
           (err) => {
             if (err) {
-              console.error(err);
+              console.error("Error updating payment:", err);
               return res
                 .status(500)
                 .json({ message: "Failed to update payment record." });
             }
-            res
-              .status(200)
-              .json({ message: "Payments record updated successfully." });
+            res.status(200).json({ message: "Payment record updated successfully." });
           }
         );
       } else {
-        // Insert a new repair record
-        const insertRepairQuery =
-          "INSERT INTO payments (driver_id, date, amount, purpose) VALUES (?, ?, ?, ?)";
-        db.query(
-          insertRepairQuery,
-          [driverId, date, amount, purpose],
-          (err) => {
-            if (err) {
-              console.error(err);
-              return res
-                .status(500)
-                .json({ message: "Failed to insert payments record." });
-            }
-            res
-              .status(200)
-              .json({ message: "Payment record added successfully." });
-          }
-        );
+        // Step 4: Payment record does not exist
+        res
+          .status(404)
+          .json({ message: "No payment record found for this driver." });
       }
     });
   });

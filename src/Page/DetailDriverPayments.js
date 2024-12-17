@@ -129,23 +129,22 @@ const DetailDriverPayments = () => {
         try {
           // Update repair
           console.log("Sending data:", newPayment);
-          await axios.put(
-            `http://localhost:10000/api/driver/payment/${newPayment.licenseNumber}/${newPayment.paymentDate}`,
+          const response = await axios.put(
+            `http://localhost:10000/api/driver/payment/${newPayment.licenseNumber}`,
             paymentData
           );
-
+          console.log(paymentData);
           setPayments((prevPayments) =>
             prevPayments.map((payment) =>
-              payment.licenseNumber !== newPayment.licenseNumber &&
-              payment.date !== newPayment.paymentDate
+              payment.licenseNumber !== newPayment.licenseNumber 
                 ? { ...payment, ...newPayment }
                 : payment
             )
           );
           fetchPayments();
-          showSuccess("Payments updated successfully!");
+          showSuccess(response.data.message || "Payments updated successfully!");
         } catch (error) {
-          console.error("Error updating payments", error);
+          showSuccess(error.response?.data?.message || "Failed to updated payment.");
         }
       } else {
         // Add new payments
@@ -154,11 +153,11 @@ const DetailDriverPayments = () => {
           paymentData
         );
         setPayments([...payments, { id: response.data.id, ...paymentData }]);
-        showSuccess("Payments added successfully!");
+        showSuccess(response.data.message || "Payments added successfully!");
       }
       resetModal();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      showSuccess(error.response?.data?.message || "Failed to added payment.");
     }
   };
 
@@ -166,7 +165,7 @@ const DetailDriverPayments = () => {
     setSelectedPayment(payment);
     setNewPayment({
       driverName: payment.name,
-      paymentDate: payment.date,
+      paymentDate: payment.payment_date,
       paymentPurpose: payment.purpose,
       licenseNumber: payment.license_number,
       costAmount: Math.floor(payment.amount || 0).toString(),
@@ -203,7 +202,7 @@ const DetailDriverPayments = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(
+      const response = await axios.delete(
         `http://localhost:10000/api/driver/payment/${paymentToDelete.license_number}/${paymentToDelete.date}`
       );
       setPayments((prevPayments) =>
@@ -213,9 +212,9 @@ const DetailDriverPayments = () => {
             payment.date !== paymentToDelete.date
         )
       );
-      showSuccess("Payment deleted successfully!");
+      showSuccess(response.data.message || "Payment deleted successfully!");
     } catch (error) {
-      console.error("Error deleting payment", error);
+      showSuccess(error.response?.data?.message || "Failed to delete payment.");
     }
     setShowDeleteConfirmation(false);
   };
@@ -349,7 +348,6 @@ const DetailDriverPayments = () => {
                   setNewPayment({ ...newPayment, paymentDate: e.target.value })
                 }
                 required
-                disabled={isEditing}
               />
               {/* Payment Purpose */}
               <input
@@ -445,7 +443,7 @@ const DetailDriverPayments = () => {
               {payments.map((payment) => (
                 <tr key={payment.payment_id}>
                   <td>{payment.name}</td>
-                  <td>{payment.date}</td>
+                  <td>{payment.payment_date}</td>
                   <td>{payment.purpose}</td>
                   <td>{payment.license_number}</td>
                   <td>{payment.amount}.00 </td>
