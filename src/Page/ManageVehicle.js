@@ -1,64 +1,103 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendar } from "react-icons/fa";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
 import "./ManageDetails.css";
 import "./Dashboard.css";
-
-// Register Chart.js scales
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import axios from "axios";
 
 const ManageVehicle = () => {
-  const vehicles = [
-    { id: 1, number: "AB123CD" },
-    { id: 2, number: "EF456GH" },
-    { id: 3, number: "IJ789KL" },
-  ];
-
+  const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState("");
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [, setSelectedVehicleNumber] = useState("");
+  const [dateRange, setDateRange] = useState([null, null]);
   const [showModal, setShowModal] = useState(false);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [expensesDetails, setExpensesDetails] = useState([]);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false); // Calendar visibility state
 
-  // Example data for the chart
-  const chartData = {
-    labels: [
-      "2024-01-01",
-      "2024-01-02",
-      "2024-01-03",
-      "2024-01-04",
-      "2024-01-05",
-    ],
-    datasets: [
-      {
-        label: "Expenses",
-        data: [100, 150, 120, 180, 90], // Example cost data
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ],
+  useEffect(() => {
+    const fetchTotalExpenses = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:10000/api/vehicle/manage/total"
+        );
+        setTotalExpenses(response.data[0]?.total_expenses || 0);
+      } catch (error) {
+        console.error("Error fetching total expenses:", error);
+        showAlertMessage(error.response?.data?.message || "Failed to fetch total expenses. Please try again.");
+      }
+    };
+
+    fetchTotalExpenses();
+  }, []); 
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:10000/api/vehicle/numbers"
+        );
+        setVehicles(response.data);
+      } catch (error) {
+        console.error("Error fetching vehicles:", error);
+      }
+    };
+
+    fetchVehicles();
+  }, []);
+
+  const handleSearch = async () => {
+    const [startDate, endDate] = dateRange;
+    if (!selectedVehicle || !startDate || !endDate) {
+      showAlertMessage("Please select a driver and a date range.");
+      return;
+    }
+
+    try {
+      // Format the start and end dates to 'YYYY-MM-DD'
+      const formattedStartDate = startDate.toISOString().split("T")[0];
+      const formattedEndDate = endDate.toISOString().split("T")[0];
+
+      const requestBody = {
+        vehicle_number: selectedVehicle,
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
+      };
+
+      // Make the API request with a POST method
+      const response = await axios.post(
+        "http://localhost:10000/api/vehicle/manage/details",
+        requestBody
+      );
+
+      console.log("Requesting with body:", requestBody);
+
+      // Check if response contains payments data
+      if (response.data.payments && response.data.payments.length > 0) {
+        setExpensesDetails(response.data.payments); // Set payments array to state
+        setTotalExpenses(response.data.total_payments); // Set total payments
+      } else {
+        setExpensesDetails([]); // No payments found
+        setTotalExpenses(0);
+      }
+
+      setShowModal(true); // Show modal with payment details
+    } catch (error) {
+      console.error("Error fetching expenses details:", error);
+      showAlertMessage(error.response?.data?.message || "No expenses details.");
+    }
   };
 
-  const handleSearch = () => {
-    setShowModal(true);
+  const showAlertMessage = (message) => {
+    setAlertMessage(message);
+    setShowAlert(true);
+    setTimeout(() => {
+      setShowAlert(false);
+    }, 1000);
   };
 
   const navigate = useNavigate();
@@ -120,40 +159,71 @@ const ManageVehicle = () => {
       </aside>
 
       <div className="Manage-main">
-        <h1 className="Manage-heading">Manage Vehicles</h1>
+        <h1 className="Manage-heading">Vehicle Expenses Report</h1>
 
         <div className="Group-search-bar">
-          {/* Vehicle Selection */}
+          {/* Driver Selection */}
           <div className="search-bar-container">
-            <label>Select Vehicle Number:</label>
+            <label>Select Vehicle:</label>
             <select
-              className="Manage-select"
+              className="driver-select"
               value={selectedVehicle}
-              onChange={(e) => setSelectedVehicle(e.target.value)}
+              onChange={(e) => {
+                const vehicleNumber = e.target.value;
+                setSelectedVehicle(vehicleNumber);
+
+                // Find the selected driver's license number
+                const selectedVehicleObj = vehicles.find(
+                  (vehicle) => vehicle.vehicleNumber === vehicleNumber
+                );
+                setSelectedVehicleNumber(
+                  selectedVehicleObj ? selectedVehicleObj.vehicle_number : ""
+                );
+              }}
             >
-              <option value="">Select Vehicle Number</option>
+              <option value="">Select Vehicle</option>
               {vehicles.map((vehicle) => (
-                <option key={vehicle.id} value={vehicle.number}>
-                  {vehicle.number}
+                <option key={vehicle.id} value={vehicle.vehicle_number}>
+                  {vehicle.vehicle_number}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Date Picker with Calendar Icon */}
+          {/* Date Range Picker */}
           <div className="date-picker-container">
-            <label>Select Month:</label>
-            <div className="date-picker-wrapper">
+            <label>Select Date Range:</label>
+            <div
+              className="date-picker-wrapper"
+              onClick={() => setCalendarOpen(true)}
+            >
               <FaCalendar className="date-picker-icon" />
-              <DatePicker
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
-                dateFormat="MMMM yyyy"
-                showMonthYearPicker
+              <input
+                type="text"
                 className="date-picker-input"
-                placeholderText="Select Month & Year"
+                value={
+                  dateRange[0] && dateRange[1]
+                    ? `${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`
+                    : "Select Date Range"
+                }
+                readOnly
               />
             </div>
+            {calendarOpen && (
+              <DatePicker
+                selected={dateRange[0]}
+                onChange={(update) => {
+                  setDateRange(update);
+                  setCalendarOpen(false); // Close the calendar after selecting the date range
+                }}
+                startDate={dateRange[0]}
+                endDate={dateRange[1]}
+                selectsRange
+                inline
+                dateFormat="yyyy-MM-dd"
+                onClickOutside={() => setCalendarOpen(false)} // Close when clicking outside
+              />
+            )}
           </div>
 
           {/* Submit Button */}
@@ -162,15 +232,15 @@ const ManageVehicle = () => {
           </button>
         </div>
 
-        {/* Total Expenses Section */}
+        {/* Total Payments Section */}
         <div className="total-expenses-box">
           <p className="total-expenses-text">
-            Total Expenses : <br /> 0 LKR
+            Total Expenses : <br /> {totalExpenses} LKR
           </p>
         </div>
       </div>
 
-      {/* Custom Modal for displaying selected details and bar chart */}
+      {/* Modal */}
       {showModal && (
         <div
           className="custom-modal-overlay"
@@ -178,7 +248,6 @@ const ManageVehicle = () => {
         >
           <div className="custom-modal" onClick={(e) => e.stopPropagation()}>
             <div className="custom-modal-header">
-              <h5>Search Results</h5>
               <button
                 onClick={() => setShowModal(false)}
                 className="close-modal-btn"
@@ -189,18 +258,59 @@ const ManageVehicle = () => {
             <div className="custom-modal-body">
               <h5>Vehicle Number: {selectedVehicle}</h5>
               <h5>
-                Selected Month:{" "}
-                {selectedDate
-                  ? selectedDate.toLocaleString("default", {
-                      month: "long",
-                      year: "numeric",
-                    })
+                Selected Date Range:{" "}
+                {dateRange[0]
+                  ? dateRange[0].toLocaleDateString()
+                  : "Not selected"}{" "}
+                -{" "}
+                {dateRange[1]
+                  ? dateRange[1].toLocaleDateString()
                   : "Not selected"}
               </h5>
-              <h5>Total Expenses: 0 LKR</h5>
+              <h5>Total Payments: {totalExpenses} LKR</h5>
+              <div className="Detail-table-container">
+                <table className="Detail-table">
+                  <thead>
+                    <tr>
+                      <th>Payment Date</th>
+                      <th>Payment Purpose</th>
+                      <th>Amount (LKR)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expensesDetails.length > 0 ? (
+                      expensesDetails.map((payments, index) => (
+                        <tr key={index}>
+                          <td>{payments.payment_date}</td>
+                          <td>{payments.description}</td>
+                          <td>{payments.amount} LKR</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3">No Expenses details available.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-              {/* Bar Chart for Costs */}
-              <Bar data={chartData} options={{ responsive: true }} />
+      {/* Alert Modal */}
+      {showAlert && (
+        <div
+          className="custom-modal-overlay"
+          onClick={() => setShowAlert(false)}
+        >
+          <div
+            className="custom-modal alert-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="custom-modal-body">
+              <p>{alertMessage}</p>
             </div>
           </div>
         </div>
