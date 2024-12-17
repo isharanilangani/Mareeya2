@@ -32,7 +32,25 @@ const ManageDriver = () => {
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [totalPayments, setTotalPayments] = useState(0); // State for total payments
+  const [totalPayments, setTotalPayments] = useState(0); 
+
+  const fetchTotalPayments = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:10000/api/driver/manage/total"
+      );
+  
+      // Extract total_payments value
+      setTotalPayments(response.data[0]?.total_payments || 0);
+    } catch (error) {
+      console.error("Error fetching total payments:", error);
+      alert("Failed to fetch total payments. Please try again.");
+    }
+  };
+  
+  useEffect(() => {
+    fetchTotalPayments(); 
+  }, []);
 
   useEffect(() => {
     const fetchDrivers = async () => {
