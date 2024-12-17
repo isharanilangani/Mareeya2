@@ -21,14 +21,18 @@ router.get("/total", (req, res) => {
 });
 
 // API to get payment details for selected license_number and month-year
-router.get("/details", (req, res) => {
-  const { license_number, start_date, end_date } = req.query; // Expecting date format: YYYY-MM-DD
+router.post("/details", (req, res) => {
+  const { license_number, start_date, end_date } = req.body; // Extract data from the request body
 
   if (!license_number || !start_date || !end_date) {
     return res
       .status(400)
       .send("License number, start date, and end date are required.");
   }
+
+  // Step 3: Format the dates for MySQL query (ensure they're YYYY-MM-DD)
+  const formattedStartDate = new Date(start_date).toISOString().split("T")[0];
+  const formattedEndDate = new Date(end_date).toISOString().split("T")[0];
 
   // Query to get payment details between start_date and end_date
   const query = `
@@ -39,11 +43,10 @@ router.get("/details", (req, res) => {
     AND p.payment_date BETWEEN ? AND ?
   `;
 
-  db.query(query, [license_number, start_date, end_date], (err, results) => {
+  db.query(query, [license_number, formattedStartDate, formattedEndDate], (err, results) => {
     if (err) {
       console.error("Error fetching payment details:", err);
-      res.status(500).send("Error fetching payment details.");
-      return;
+      return res.status(500).send("Error fetching payment details.");
     }
 
     if (results.length === 0) {
@@ -54,7 +57,7 @@ router.get("/details", (req, res) => {
         );
     }
 
-    // Calculate total payments in JavaScript (if needed)
+    // Calculate total payments in JavaScript
     const totalPayments = results.reduce(
       (acc, payment) => acc + parseFloat(payment.amount),
       0
@@ -62,7 +65,7 @@ router.get("/details", (req, res) => {
 
     res.json({
       payments: results,
-      total_payments: totalPayments, // Now sending the total payments
+      total_payments: totalPayments, // Send total payments in response
     });
   });
 });

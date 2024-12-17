@@ -10,31 +10,30 @@ import axios from "axios";
 const ManageDriver = () => {
   const [drivers, setDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [selectedLicense, setSelectedLicense] = useState("");
+  const [dateRange, setDateRange] = useState([null, null]);
   const [showModal, setShowModal] = useState(false);
   const [totalPayments, setTotalPayments] = useState(0);
   const [paymentDetails, setPaymentDetails] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-
-  const fetchTotalPayments = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:10000/api/driver/manage/total"
-      );
-
-      // Extract total_payments value
-      setTotalPayments(response.data[0]?.total_payments || 0);
-    } catch (error) {
-      console.error("Error fetching total payments:", error);
-      showAlertMessage("Failed to fetch total payments. Please try again.");
-    }
-  };
+  const [calendarOpen, setCalendarOpen] = useState(false); // Calendar visibility state
 
   useEffect(() => {
+    const fetchTotalPayments = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:10000/api/driver/manage/total"
+        );
+        setTotalPayments(response.data[0]?.total_payments || 0);
+      } catch (error) {
+        console.error("Error fetching total payments:", error);
+        showAlertMessage(error.response?.data?.message || "Failed to fetch total payments. Please try again.");
+      }
+    };
+
     fetchTotalPayments();
-  }, []);
+  }, []); 
 
   useEffect(() => {
     const fetchDrivers = async () => {
@@ -52,6 +51,7 @@ const ManageDriver = () => {
   }, []);
 
   const handleSearch = async () => {
+    const [startDate, endDate] = dateRange;
     if (!selectedDriver || !startDate || !endDate) {
       showAlertMessage("Please select a driver and a date range.");
       return;
@@ -62,36 +62,33 @@ const ManageDriver = () => {
       const formattedStartDate = startDate.toISOString().split("T")[0];
       const formattedEndDate = endDate.toISOString().split("T")[0];
 
-      // Fetch payment details
-      const response = await axios.get(
+      const requestBody = {
+        license_number: selectedLicense,
+        start_date: formattedStartDate,
+        end_date: formattedEndDate,
+      };
+
+      // Make the API request with a POST method
+      const response = await axios.post(
         "http://localhost:10000/api/driver/manage/details",
-        {
-          params: {
-            license_number: "ABC12345", // Replace with the selected driver's license number
-            start_date: formattedStartDate,
-            end_date: formattedEndDate,
-          },
-        }
+        requestBody
       );
 
-      // Assuming the response contains an array of payment details
-      if (response.data.length > 0) {
-        setPaymentDetails(response.data);
-        // Calculate total payments
-        const total = response.data.reduce(
-          (acc, payment) => acc + parseFloat(payment.amount),
-          0
-        );
-        setTotalPayments(total);
+      console.log("Requesting with body:", requestBody);
+
+      // Check if response contains payments data
+      if (response.data.payments && response.data.payments.length > 0) {
+        setPaymentDetails(response.data.payments); // Set payments array to state
+        setTotalPayments(response.data.total_payments); // Set total payments
       } else {
-        setPaymentDetails([]);
+        setPaymentDetails([]); // No payments found
         setTotalPayments(0);
       }
 
-      setShowModal(true);
+      setShowModal(true); // Show modal with payment details
     } catch (error) {
       console.error("Error fetching payment details:", error);
-      showAlertMessage("Failed to fetch payment details. Please try again.");
+      showAlertMessage(error.response?.data?.message || "No Payments details.");
     }
   };
 
@@ -171,7 +168,18 @@ const ManageDriver = () => {
             <select
               className="driver-select"
               value={selectedDriver}
-              onChange={(e) => setSelectedDriver(e.target.value)}
+              onChange={(e) => {
+                const driverName = e.target.value;
+                setSelectedDriver(driverName);
+
+                // Find the selected driver's license number
+                const selectedDriverObj = drivers.find(
+                  (driver) => driver.name === driverName
+                );
+                setSelectedLicense(
+                  selectedDriverObj ? selectedDriverObj.license_number : ""
+                );
+              }}
             >
               <option value="">Select Driver</option>
               {drivers.map((driver) => (
@@ -182,41 +190,40 @@ const ManageDriver = () => {
             </select>
           </div>
 
-          {/* Date Picker for Start Date */}
+          {/* Date Range Picker */}
           <div className="date-picker-container">
-            <label>Select Start Date:</label>
-            <div className="date-picker-wrapper">
+            <label>Select Date Range:</label>
+            <div
+              className="date-picker-wrapper"
+              onClick={() => setCalendarOpen(true)}
+            >
               <FaCalendar className="date-picker-icon" />
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => setStartDate(date)}
-                dateFormat="yyyy-MM-dd"
+              <input
+                type="text"
                 className="date-picker-input"
-                placeholderText="Select Start Date"
-                selectsStart
-                startDate={startDate}
-                endDate={endDate}
+                value={
+                  dateRange[0] && dateRange[1]
+                    ? `${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`
+                    : "Select Date Range"
+                }
+                readOnly
               />
             </div>
-          </div>
-
-          {/* Date Picker for End Date */}
-          <div className="date-picker-container">
-            <label>Select End Date:</label>
-            <div className="date-picker-wrapper">
-              <FaCalendar className="date-picker-icon" />
+            {calendarOpen && (
               <DatePicker
-                selected={endDate}
-                onChange={(date) => setEndDate(date)}
+                selected={dateRange[0]}
+                onChange={(update) => {
+                  setDateRange(update);
+                  setCalendarOpen(false); // Close the calendar after selecting the date range
+                }}
+                startDate={dateRange[0]}
+                endDate={dateRange[1]}
+                selectsRange
+                inline
                 dateFormat="yyyy-MM-dd"
-                className="date-picker-input"
-                placeholderText="Select End Date"
-                selectsEnd
-                startDate={startDate}
-                endDate={endDate}
-                minDate={startDate} // Ensure end date is not before start date
+                onClickOutside={() => setCalendarOpen(false)} // Close when clicking outside
               />
-            </div>
+            )}
           </div>
 
           {/* Submit Button */}
@@ -252,27 +259,31 @@ const ManageDriver = () => {
               <h5>Driver Name: {selectedDriver}</h5>
               <h5>
                 Selected Date Range:{" "}
-                {startDate ? startDate.toLocaleDateString() : "Not selected"} -{" "}
-                {endDate ? endDate.toLocaleDateString() : "Not selected"}
+                {dateRange[0]
+                  ? dateRange[0].toLocaleDateString()
+                  : "Not selected"}{" "}
+                -{" "}
+                {dateRange[1]
+                  ? dateRange[1].toLocaleDateString()
+                  : "Not selected"}
               </h5>
               <h5>Total Payments: {totalPayments} LKR</h5>
-
               <div className="Detail-table-container">
                 <table className="Detail-table">
                   <thead>
                     <tr>
                       <th>Payment Date</th>
                       <th>Payment Purpose</th>
-                      <th>Amount</th>
+                      <th>Amount (LKR)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paymentDetails.length > 0 ? (
-                      paymentDetails.map((payment, index) => (
+                      paymentDetails.map((payments, index) => (
                         <tr key={index}>
-                          <td>{payment.payment_date}</td>
-                          <td>{payment.purpose}</td>
-                          <td>{payment.amount} LKR</td>
+                          <td>{payments.payment_date}</td>
+                          <td>{payments.purpose}</td>
+                          <td>{payments.amount} LKR</td>
                         </tr>
                       ))
                     ) : (
