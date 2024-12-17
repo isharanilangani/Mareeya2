@@ -164,11 +164,11 @@ const DetailDriver = () => {
   const confirmDelete = async () => {
     try {
       await axios.delete(
-        `http://localhost:10000/api/vehicle/${driverToDelete.vehicle_no}`
+        `http://localhost:10000/api/driver/${driverToDelete.driver_id}`
       );
       setDrivers(
         drivers.filter(
-          (driver) => driver.vehicle_no !== driverToDelete.vehicle_no
+          (driver) => driver.driver_id !== driverToDelete.driver_id
         )
       );
       showSuccess("Driver deleted successfully!");
@@ -337,7 +337,7 @@ const DetailDriver = () => {
               <div className="modal-buttons">
                 <button
                   className="modal-submit-button"
-                  onClick={() => confirmDelete(driverToDelete.vehicle_no)}
+                  onClick={() => confirmDelete(driverToDelete.driver_id)}
                 >
                   Yes
                 </button>

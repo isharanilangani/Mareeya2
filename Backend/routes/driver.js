@@ -136,53 +136,56 @@ router.get("/", (req, res) => {
   });
 });
 
-// DELETE API to remove a vehicle by vehicle_number
-router.delete("/:vehicle_number", (req, res) => {
-  const { vehicle_number } = req.params;
+// DELETE API to remove a driver
+router.delete("/:driver_id", (req, res) => {
+  const { driver_id } = req.params;
 
-  if (!vehicle_number) {
-    return res.status(400).json({ message: "License number is required." });
+  if (!driver_id) {
+    return res.status(400).json({ message: "Driver ID is required." });
   }
 
-  // Query to fetch the vehicle ID associated with the driver
-  const getVehicleIdQuery = `
-      SELECT vehicle_id 
-      FROM vehicles 
-      WHERE vehicle_number = ?
-    `;
+  // Step 1: Check if the driver exists
+  const checkDriverQuery = `
+    SELECT * FROM drivers WHERE driver_id = ?
+  `;
 
-  db.query(getVehicleIdQuery, [vehicle_number], (err, rows) => {
+  db.query(checkDriverQuery, [driver_id], (err, rows) => {
     if (err) {
-      console.error("Error fetching vehicle ID:", err);
+      console.error("Error fetching driver ID:", err);
       return res.status(500).json({ message: "Database error occurred." });
     }
 
     if (rows.length === 0) {
       return res.status(404).json({
-        message:
-          "No driver or associated vehicle found for the given vehicle number.",
+        message: "Driver not found.",
       });
     }
 
-    const vehicleId = rows[0].vehicle_id;
-
-    // Begin deletion process
-    const deleteDriverQuery = "DELETE FROM drivers WHERE vehicle_id = ?";
-    db.query(deleteDriverQuery, [vehicleId], (err) => {
+    // Step 2: Begin deletion process
+    const deleteDriverByQuery = "DELETE FROM driverby WHERE driver_id = ?";
+    db.query(deleteDriverByQuery, [driver_id], (err) => {
       if (err) {
-        console.error("Error deleting driver:", err);
-        return res.status(500).json({ message: "Failed to delete driver." });
+        console.error("Error deleting from driverby table:", err);
+        return res.status(500).json({ message: "Failed to delete from driverby table." });
       }
 
-      const deleteVehicleQuery = "DELETE FROM vehicles WHERE vehicle_id = ?";
-      db.query(deleteVehicleQuery, [vehicleId], (err) => {
+      const deletePaymentsQuery = "DELETE FROM payments WHERE driver_id = ?";
+      db.query(deletePaymentsQuery, [driver_id], (err) => {
         if (err) {
-          console.error("Error deleting vehicle:", err);
-          return res.status(500).json({ message: "Failed to delete vehicle." });
+          console.error("Error deleting from payments table:", err);
+          return res.status(500).json({ message: "Failed to delete from payments table." });
         }
 
-        res.status(200).json({
-          message: "Vehicle and associated driver deleted successfully.",
+        const deleteDriverQuery = "DELETE FROM drivers WHERE driver_id = ?";
+        db.query(deleteDriverQuery, [driver_id], (err) => {
+          if (err) {
+            console.error("Error deleting driver:", err);
+            return res.status(500).json({ message: "Failed to delete driver." });
+          }
+
+          return res.status(200).json({
+            message: "Driver deleted successfully.",
+          });
         });
       });
     });
