@@ -85,38 +85,28 @@ const DetailDriver = () => {
     e.preventDefault();
     if (isEditing) {
       try {
-        if (!newDriver.vehicle_no) {
-          console.error("Vehicle number is missing for update!");
-          return;
-        }
-
         const payload = {
           driver_name: newDriver.name,
           contact: newDriver.contact,
           license_number: newDriver.license_number,
         };
 
-        console.log(
-          "Updating driver with vehicle number:",
-          newDriver.vehicle_no
-        );
-
-        await axios.put(
-          `http://localhost:10000/api/driver/${newDriver.vehicle_no}`,
+        const response = await axios.put(
+          `http://localhost:10000/api/driver/${newDriver.driver_id}`,
           payload
         );
 
         setDrivers((prevDrivers) =>
           prevDrivers.map((driver) =>
-            driver.vehicle_number === newDriver.vehicle_no
+            driver.driver_id === newDriver.driver_id
               ? { ...driver, ...payload }
               : driver
           )
         );
         fetchDrivers();
-        showSuccess("Driver updated successfully!");
+        showSuccess(response.data.message || "Driver updated successfully!");
       } catch (error) {
-        console.error("Error updating driver", error);
+        showSuccess(error.response?.data?.message || "Failed to update drivers.");
       }
     } else {
       try {
@@ -298,6 +288,7 @@ const DetailDriver = () => {
                 onChange={handleInputChange}
                 onClick={handleVehicleDropdownClick}
                 required
+                disabled={isEditing}
               >
                 <option value="">Select Vehicle Number</option>
                 {isLoadingVehicles ? (

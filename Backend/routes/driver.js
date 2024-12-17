@@ -4,31 +4,30 @@ const router = express.Router();
 const moment = require("moment");
 
 // Register or Update Vehicle and Driver
-router.put("/:vehicle_number", (req, res) => {
-  const { vehicle_number } = req.params;
+router.put("/:driver_id", (req, res) => {
+  const { driver_id } = req.params;
   const { driver_name, contact, license_number } = req.body;
 
   // Validate required fields
-  if (!vehicle_number || !contact || !driver_name || !license_number) {
+  if (!driver_id || !contact || !driver_name || !license_number) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
   const vehicleQuery =
-    "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
-  db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
+    "SELECT * FROM drivers WHERE driver_id = ?";
+  db.query(vehicleQuery, [driver_id], (err, vehicleRows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: "Database error occurred." });
     }
 
     if (vehicleRows.length > 0) {
-      // Vehicle exists, update the driver details
-      const vehicleId = vehicleRows[0].vehicle_id;
+      const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
       const updateDriverQuery =
-        "UPDATE drivers SET name = ?, contact = ?, license_number = ? WHERE vehicle_id = ?";
+        "UPDATE drivers SET name = ?, contact = ?, license_number = ?, created_date = ? WHERE driver_id = ?";
       db.query(
         updateDriverQuery,
-        [driver_name, contact, license_number, vehicleId],
+        [driver_name, contact, license_number, createdDate, driver_id],
         (err) => {
           if (err) {
             console.error(err);
@@ -42,37 +41,8 @@ router.put("/:vehicle_number", (req, res) => {
         }
       );
     } else {
-      // Vehicle doesn't exist, insert a new vehicle and driver
-      const insertVehicleQuery =
-        "INSERT INTO vehicles (vehicle_number) VALUES (?)";
-      db.query(insertVehicleQuery, [vehicle_number], (err, result) => {
-        if (err) {
-          console.error(err);
-          return res
-            .status(500)
-            .json({ message: "Failed to insert vehicle details." });
-        }
-
-        const vehicleId = result.insertId;
-        const insertDriverQuery =
-          "INSERT INTO drivers (name, contact, license_number, vehicle_id) VALUES(?, ?, ?, ?)";
-        db.query(
-          insertDriverQuery,
-          [driver_name, contact, license_number, vehicleId],
-          (err) => {
-            if (err) {
-              console.error(err);
-              return res
-                .status(500)
-                .json({ message: "Failed to insert driver details." });
-            }
-
-            return res.status(200).json({
-              message: "Vehicle and driver details added successfully.",
-              vehicleId,
-            });
-          }
-        );
+      return res.status(404).json({
+        message: "Driver not found.",
       });
     }
   });
