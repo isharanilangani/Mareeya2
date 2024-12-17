@@ -6,16 +6,15 @@ const moment = require("moment");
 // Add or Update Vehicle Repair Record
 router.put("/:vehicle_number", (req, res) => {
   const { vehicle_number } = req.params;
-  const { date, description, amount } = req.body;
+  const { description, amount, date } = req.body;
 
   // Ensure all required fields are provided
-  if (!vehicle_number || !date || !description || !amount) {
+  if (!vehicle_number || !description || !amount || !date) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
-  // Fetch vehicle_id from vehicle_number
-  const vehicleQuery =
-    "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
+  // Fetch vehicle data from the database
+  const vehicleQuery = "SELECT vehicle_id FROM vehicles WHERE vehicle_number = ?";
   db.query(vehicleQuery, [vehicle_number], (err, vehicleRows) => {
     if (err) {
       console.error(err);
@@ -30,10 +29,9 @@ router.put("/:vehicle_number", (req, res) => {
 
     const vehicle_id = vehicleRows[0].vehicle_id;
 
-    // Check if a repair record exists for the vehicle and date
-    const repairQuery =
-      "SELECT expense_id FROM expenses WHERE vehicle_id = ? AND date = ?";
-    db.query(repairQuery, [vehicle_id, date], (err, repairRows) => {
+    // Check if a repair record exists for the vehicle
+    const repairQuery = "SELECT expense_id FROM expenses WHERE vehicle_id = ?";
+    db.query(repairQuery, [vehicle_id], (err, repairRows) => {
       if (err) {
         console.error(err);
         return res
@@ -46,11 +44,13 @@ router.put("/:vehicle_number", (req, res) => {
       if (repairRows.length > 0) {
         // Repair record exists, update it
         const repairId = repairRows[0].expense_id;
+        const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
+
         const updateRepairQuery =
-          "UPDATE expenses SET description = ?, amount = ?, date =? WHERE expense_id = ?";
+          "UPDATE expenses SET description = ?, amount = ?, payment_date =?, created_date = ? WHERE expense_id = ?";
         db.query(
           updateRepairQuery,
-          [description, amount, date, repairId],
+          [description, amount, date, createdDate, repairId],
           (err) => {
             if (err) {
               console.error(err);
@@ -58,30 +58,16 @@ router.put("/:vehicle_number", (req, res) => {
                 .status(500)
                 .json({ message: "Failed to update repair record." });
             }
-            res
+            return res
               .status(200)
               .json({ message: "Repair record updated successfully." });
           }
         );
       } else {
-        // Insert a new repair record
-        const insertRepairQuery =
-          "INSERT INTO expenses (vehicle_id, date, description, amount) VALUES (?, ?, ?, ?)";
-        db.query(
-          insertRepairQuery,
-          [vehicle_id, date, description, amount],
-          (err) => {
-            if (err) {
-              console.error(err);
-              return res
-                .status(500)
-                .json({ message: "Failed to insert repair record." });
-            }
-            res
-              .status(200)
-              .json({ message: "Repair record added successfully." });
-          }
-        );
+        // No existing repair record, you could optionally handle this scenario
+        return res
+          .status(404)
+          .json({ message: "No repair record found for the given vehicle." });
       }
     });
   });

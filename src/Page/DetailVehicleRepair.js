@@ -114,22 +114,22 @@ const DetailVehicleRepair = () => {
           // Update repair
           console.log("Sending data:", newRepair);
           const response = await axios.put(
-            `http://localhost:10000/api/vehicle/repair/${newRepair.vehicleNumber}/${newRepair.repairDate}`,
+            `http://localhost:10000/api/vehicle/repair/${newRepair.vehicleNumber}`,
             repairData
           );
 
           setRepairs((prevRepairs) =>
             prevRepairs.map((repair) =>
-              repair.vehicle_no !== newRepair.vehicleNumber &&
-              repair.date !== newRepair.repairDate
+              repair.vehicleNumber !== newRepair.vehicleNumber
                 ? { ...repair, ...newRepair }
                 : repair
             )
           );
           fetchRepairs();
-          showSuccess("Repair updated successfully!");
+          showSuccess(response.data.message || "Repair updated successfully!");
         } catch (error) {
-          console.error("Error updating vehicle", error);
+          console.error(error);
+          showSuccess(error.response?.data?.message || "Failed to add repairs.");
         }
       } else {
         // Add new repair
@@ -150,7 +150,7 @@ const DetailVehicleRepair = () => {
     setSelectedRepair(repair); // Set the selected repair
     setNewRepair({
       vehicleNumber: repair.vehicle_number,
-      repairDate: repair.date, 
+      repairDate: repair.payment_date, 
       repairDetails: repair.description,
       costAmount: Math.floor(repair.amount), // Extract the whole number part
       costCents: ((repair.amount % 1) * 100).toFixed(0).padStart(2, "0"), // Extract the cents part
@@ -195,9 +195,9 @@ const DetailVehicleRepair = () => {
             repair.date !== repairToDelete.date
         )
       );
-      showSuccess("Repair deleted successfully!");
+      showSuccess(response.data.message || "Repair deleted successfully!");
     } catch (error) {
-      console.error("Error deleting driver", error);
+      showSuccess(error.response?.data?.message || "Failed to delete repairs.");
     }
     setShowDeleteConfirmation(false);
   };
@@ -308,7 +308,6 @@ const DetailVehicleRepair = () => {
                   setNewRepair({ ...newRepair, repairDate: e.target.value })
                 }
                 required
-                disabled={isEditing}
               />
               <input
                 type="text"
