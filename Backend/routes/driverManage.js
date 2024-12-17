@@ -25,7 +25,9 @@ router.get("/details", (req, res) => {
   const { license_number, start_date, end_date } = req.query; // Expecting date format: YYYY-MM-DD
 
   if (!license_number || !start_date || !end_date) {
-    return res.status(400).send("License number, start date, and end date are required.");
+    return res
+      .status(400)
+      .send("License number, start date, and end date are required.");
   }
 
   // Query to get payment details between start_date and end_date
@@ -52,7 +54,16 @@ router.get("/details", (req, res) => {
         );
     }
 
-    res.json(results);
+    // Calculate total payments in JavaScript (if needed)
+    const totalPayments = results.reduce(
+      (acc, payment) => acc + parseFloat(payment.amount),
+      0
+    );
+
+    res.json({
+      payments: results,
+      total_payments: totalPayments, // Now sending the total payments
+    });
   });
 });
 
