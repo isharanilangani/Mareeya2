@@ -124,8 +124,10 @@ input[type="file"]:focus {
 
 /* Footer Style */
 .settings-footer {
+  margin-left: 25%;
   text-align: center;
-  margin-top: 500px;
+  position: fixed;
+  bottom: 0;
   font-size: 14px;
   color: #555;
 }

@@ -349,7 +349,7 @@ const DetailVehicle = () => {
             </tbody>
           </table>
         </div>
-        <footer className="login-footer">
+        <footer className="detail-footer">
           <p>
             Solution by DraveSpace<br></br>077 673 4021
           </p>

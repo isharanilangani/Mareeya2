@@ -165,9 +165,11 @@ nav li a:hover {
 }
 
 /* Footer Style */
-.login-footer {
+.dashboard-footer {
+  margin-left: 25%;
   text-align: center;
-  margin-top: 50px;
+  position: fixed;
+  bottom: 0;
   font-size: 14px;
   color: #555;
 }

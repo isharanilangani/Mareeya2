@@ -346,3 +346,13 @@ select {
 select:focus {
   outline: none; 
 }
+
+/* Footer Style */
+.detail-footer {
+  margin-left: 25%;
+  text-align: center;
+  position: fixed;
+  bottom: 0;
+  font-size: 14px;
+  color: #555;
+}

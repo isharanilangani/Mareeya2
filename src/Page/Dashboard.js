@@ -105,7 +105,7 @@ function Dashboard() {
             View Drivers
           </button>
         </div>
-        <footer className="login-footer">
+        <footer className="dashboard-footer">
           <p>
             Solution by DraveSpace<br></br>077 673 4021
           </p>
