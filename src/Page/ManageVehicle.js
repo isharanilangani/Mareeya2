@@ -274,7 +274,7 @@ const ManageVehicle = () => {
             Total Expenses : <br /> {totalExpenses} LKR
           </p>
         </div>
-        <footer className="login-footer">
+        <footer className="manage-footer">
           <p>
             Solution by DraveSpace<br></br>077 673 4021
           </p>

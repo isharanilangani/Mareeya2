@@ -121,3 +121,11 @@ input[type="file"]:focus {
   color: red;
   margin-bottom: 10px;
 }
+
+/* Footer Style */
+.settings-footer {
+  text-align: center;
+  margin-top: 500px;
+  font-size: 14px;
+  color: #555;
+}

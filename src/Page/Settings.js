@@ -139,7 +139,7 @@ function Settings() {
             </button>
           </form>
         </div>
-        <footer className="login-footer">
+        <footer className="settings-footer">
           <p>
             Solution by DraveSpace<br></br>077 673 4021
           </p>
