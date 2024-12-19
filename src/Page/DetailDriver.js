@@ -15,7 +15,7 @@ const DetailDriver = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [driverToDelete, setDriverToDelete] = useState(null);
   const [newDriver, setNewDriver] = useState({
-    vehicle_numbers: [],
+    vehicle_numbers: [""],
     name: "",
     license_number: "",
     contact: "",
@@ -47,7 +47,7 @@ const DetailDriver = () => {
   const addVehicle = () => {
     setNewDriver((prevDriver) => ({
       ...prevDriver,
-      vehicle_numbers: [...prevDriver.vehicle_numbers, []],
+      vehicle_numbers: [...prevDriver.vehicle_numbers, ""],
     }));
   };
 
@@ -177,7 +177,7 @@ const DetailDriver = () => {
 
   const resetModal = () => {
     setNewDriver({
-      vehicle_number: [], // Ensure this is initialized as an empty array
+      vehicle_numbers: [""], // Always start with one empty vehicle number field
       name: "",
       license_number: "",
       contact: "",
@@ -241,7 +241,7 @@ const DetailDriver = () => {
       // Update newDriver with fetched vehicle numbers
       setNewDriver({
         ...driver,
-        vehicle_numbers: vehicleData.vehicle_numbers, // Use the array directly
+        vehicle_numbers: vehicleData.vehicle_numbers || [""], // Use the array directly
       });
     } catch (error) {
       console.error("Error fetching vehicle numbers:", error);
@@ -389,7 +389,7 @@ const DetailDriver = () => {
                       </select>
 
                       {/* Show remove button (X) only if a vehicle number is selected */}
-                      {vehicle && (
+                      {newDriver.vehicle_numbers.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeVehicle(index)}
