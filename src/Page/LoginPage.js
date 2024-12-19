@@ -1,6 +1,7 @@
 // src/LoginPage.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
 import axios from "axios";
 import "./LoginPage.css";
 
@@ -12,34 +13,33 @@ const LoginPage = () => {
   const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
+    const { login } = useAuth(); // Access login method from AuthContext
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
     setSuccess(false);
     setLoading(true);
-
+  
     try {
-      const response = await axios.post(
-        "http://localhost:10000/api/auth/login",
-        {
-          username,
-          password,
-        }
-      );
-
+      const response = await axios.post("http://localhost:10000/api/auth/login", {
+        username,
+        password,
+      });
+  
       console.log("Login successful:", response.data);
-
+  
       // Save the token in localStorage for future requests
       localStorage.setItem("token", response.data.token);
-
+  
+      // Update the isAuthenticated state via context
+      login(response.data.token);  // Call the login function from context
+  
       // Redirect to the dashboard page
       navigate("/dashboard");
     } catch (err) {
-      console.error("Login error:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.message || "Login failed. Please try again."
-      );
+      console.error("Login error:", err?.response?.data || err.message);
+      setError(err?.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
