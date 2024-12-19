@@ -58,7 +58,9 @@ const DetailVehicleRepair = () => {
   // Fetch repair records on component mount
   const fetchRepairs = async () => {
     try {
-      const response = await axios.get("http://localhost:10000/api/vehicle/repair");
+      const response = await axios.get(
+        "http://localhost:10000/api/vehicle/repair"
+      );
       const validRepairs = response.data.filter(
         (repair) => repair.vehicle_number
       );
@@ -129,7 +131,9 @@ const DetailVehicleRepair = () => {
           showSuccess(response.data.message || "Repair updated successfully!");
         } catch (error) {
           console.error(error);
-          showSuccess(error.response?.data?.message || "Failed to add repairs.");
+          showSuccess(
+            error.response?.data?.message || "Failed to add repairs."
+          );
         }
       } else {
         // Add new repair
@@ -151,7 +155,7 @@ const DetailVehicleRepair = () => {
     setSelectedRepair(repair); // Set the selected repair
     setNewRepair({
       vehicleNumber: repair.vehicle_number,
-      repairDate: repair.payment_date, 
+      repairDate: repair.payment_date,
       repairDetails: repair.description,
       costAmount: Math.floor(repair.amount), // Extract the whole number part
       costCents: ((repair.amount % 1) * 100).toFixed(0).padStart(2, "0"), // Extract the cents part
@@ -425,6 +429,11 @@ const DetailVehicleRepair = () => {
             </tbody>
           </table>
         </div>
+        <footer>
+          <p>
+            Solution by DraveSpace<br></br>077 673 4021
+          </p>
+        </footer>
       </div>
     </div>
   );

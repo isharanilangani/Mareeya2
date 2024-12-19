@@ -472,6 +472,11 @@ const DetailDriverPayments = () => {
             </tbody>
           </table>
         </div>
+        <footer>
+          <p>
+            Solution by DraveSpace<br></br>077 673 4021
+          </p>
+        </footer>
       </div>
     </div>
   );

@@ -137,6 +137,11 @@ function Settings() {
             {loading ? "Saving..." : "Save Changes"}
           </button>
         </form>
+        <footer>
+          <p>
+            Solution by DraveSpace<br></br>077 673 4021
+          </p>
+        </footer>
       </main>
 
       {/* Modal */}

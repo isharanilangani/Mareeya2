@@ -227,11 +227,13 @@ const ManageDriver = () => {
                 className="date-picker-input"
                 value={
                   dateRange[0] && dateRange[1]
-                    ? `${dateRange[0].toLocaleDateString("en-GB", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      }).replace(/\//g, "-")} - ${dateRange[1]
+                    ? `${dateRange[0]
+                        .toLocaleDateString("en-GB", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        })
+                        .replace(/\//g, "-")} - ${dateRange[1]
                         .toLocaleDateString("en-GB", {
                           year: "numeric",
                           month: "2-digit",
@@ -267,6 +269,11 @@ const ManageDriver = () => {
             Total Payments : <br /> {totalPayments} LKR
           </p>
         </div>
+        <footer>
+          <p>
+            Solution by DraveSpace<br></br>077 673 4021
+          </p>
+        </footer>
       </div>
 
       {/* Modal */}

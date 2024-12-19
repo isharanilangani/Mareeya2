@@ -75,7 +75,9 @@ const DetailVehicle = () => {
         );
         showSuccess(response.data.message || "Vehicle updated successfully!");
       } catch (error) {
-        showSuccess(error.response?.data?.message || "Failed to update vehicle.");
+        showSuccess(
+          error.response?.data?.message || "Failed to update vehicle."
+        );
       }
     } else {
       try {
@@ -118,9 +120,7 @@ const DetailVehicle = () => {
         `http://localhost:10000/api/vehicle/${vehicle_id}`
       );
       setVehicles((prevVehicles) =>
-        prevVehicles.filter(
-          (vehicle) => vehicle.vehicle_id !== vehicle_id
-        )
+        prevVehicles.filter((vehicle) => vehicle.vehicle_id !== vehicle_id)
       );
       showSuccess(response.data.message || "Vehicle deleted successfully!");
     } catch (error) {
@@ -349,6 +349,11 @@ const DetailVehicle = () => {
             </tbody>
           </table>
         </div>
+        <footer>
+          <p>
+            Solution by DraveSpace<br></br>077 673 4021
+          </p>
+        </footer>
       </div>
     </div>
   );

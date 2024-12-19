@@ -25,7 +25,7 @@ const DetailDriver = () => {
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
   const [vehicleFetchError, setVehicleFetchError] = useState(null);
   const [, setSelectedDriver] = useState(null);
-  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewDriver((prevDriver) => ({
@@ -217,7 +217,7 @@ const DetailDriver = () => {
     setSelectedDriver(driver);
     setIsEditing(true);
     setShowModal(true); // Open modal early if needed for UX
-  
+
     try {
       // Fetch vehicle numbers for the driver
       const response = await fetch(
@@ -226,15 +226,18 @@ const DetailDriver = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch vehicle numbers");
       }
-  
+
       const vehicleData = await response.json();
       console.log("Fetched Vehicle Numbers:", vehicleData); // Debugging
-  
+
       // Ensure you access the `vehicle_numbers` array from the object
-      if (!vehicleData.vehicle_numbers || !Array.isArray(vehicleData.vehicle_numbers)) {
+      if (
+        !vehicleData.vehicle_numbers ||
+        !Array.isArray(vehicleData.vehicle_numbers)
+      ) {
         throw new Error("Invalid vehicle numbers format");
       }
-  
+
       // Update newDriver with fetched vehicle numbers
       setNewDriver({
         ...driver,
@@ -248,7 +251,7 @@ const DetailDriver = () => {
       });
     }
   };
-  
+
   const openDeleteConfirmation = (driver) => {
     setDriverToDelete(driver);
     setShowDeleteConfirmation(true);
@@ -498,6 +501,11 @@ const DetailDriver = () => {
             </tbody>
           </table>
         </div>
+        <footer>
+          <p>
+            Solution by DraveSpace<br></br>077 673 4021
+          </p>
+        </footer>
       </div>
     </div>
   );
