@@ -148,23 +148,26 @@ const DetailDriver = () => {
     } else {
       try {
         const addDriver = {
-          vehicle_number: newDriver.vehicle_number,
           driver_name: newDriver.name,
           license_number: newDriver.license_number,
           contact: newDriver.contact,
+          vehicle_numbers: newDriver.vehicle_numbers, // Make sure this is an array of vehicle numbers
         };
 
         console.log("Adding new driver:", addDriver);
 
+        // Post the request to the backend
         const response = await axios.post(
           "http://localhost:10000/api/driver",
           addDriver
         );
 
+        // Assuming successful response, add the driver and show success message
         setDrivers([...drivers, response.data]);
-        fetchDrivers();
+        fetchDrivers(); // Refresh drivers list
         showSuccess(response.data.message || "Driver added successfully!");
       } catch (error) {
+        // Show error message if something goes wrong
         showSuccess(error.response?.data?.message || "Failed to add drivers.");
       }
     }
@@ -173,7 +176,7 @@ const DetailDriver = () => {
 
   const resetModal = () => {
     setNewDriver({
-      vehicle_number: "",
+      vehicle_number: [], // Ensure this is initialized as an empty array
       name: "",
       license_number: "",
       contact: "",
@@ -365,7 +368,11 @@ const DetailDriver = () => {
                       )}
                     </div>
                   ))}
-                  <button className="action-button" type="button" onClick={addVehicle}>
+                  <button
+                    className="action-button"
+                    type="button"
+                    onClick={addVehicle}
+                  >
                     Add Vehicle
                   </button>
                 </div>
