@@ -429,7 +429,7 @@ const DetailVehicleRepair = () => {
             </tbody>
           </table>
         </div>
-        <footer>
+        <footer className="login-footer">
           <p>
             Solution by DraveSpace<br></br>077 673 4021
           </p>
