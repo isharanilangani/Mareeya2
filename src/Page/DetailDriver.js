@@ -15,7 +15,7 @@ const DetailDriver = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [driverToDelete, setDriverToDelete] = useState(null);
   const [newDriver, setNewDriver] = useState({
-    vehicle_numbers: [""],
+    vehicle_numbers: [],
     name: "",
     license_number: "",
     contact: "",
@@ -47,7 +47,7 @@ const DetailDriver = () => {
   const addVehicle = () => {
     setNewDriver((prevDriver) => ({
       ...prevDriver,
-      vehicle_numbers: [...prevDriver.vehicle_numbers, ""],
+      vehicle_numbers: [...prevDriver.vehicle_numbers, []],
     }));
   };
 
@@ -355,7 +355,7 @@ const DetailDriver = () => {
               <div>
                 <label htmlFor="vehicle_numbers">Vehicle Numbers</label>
                 <div id="vehicle_numbers">
-                  {newDriver.vehicle_numbers.map((vehicle, index) => (
+                  {newDriver.vehicle_numbers?.map((vehicle, index) => (
                     <div key={index} className="vehicle-input">
                       <select
                         name={`vehicle_number_${index}`}
