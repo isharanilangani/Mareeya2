@@ -28,12 +28,15 @@ const ManageVehicle = () => {
         setTotalExpenses(response.data[0]?.total_expenses || 0);
       } catch (error) {
         console.error("Error fetching total expenses:", error);
-        showAlertMessage(error.response?.data?.message || "Failed to fetch total expenses. Please try again.");
+        showAlertMessage(
+          error.response?.data?.message ||
+            "Failed to fetch total expenses. Please try again."
+        );
       }
     };
 
     fetchTotalExpenses();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -110,6 +113,32 @@ const ManageVehicle = () => {
 
   const toggleDetails = () => {
     setIsDetailsOpen((prev) => !prev);
+  };
+
+  const handleMonthSelect = (date) => {
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    let endOfMonth;
+
+    // Check if the selected month has 31 days
+    const monthWith31Days = [0, 2, 4, 6, 7, 9, 11]; // 0 - Jan, 2 - Mar, 4 - May, etc.
+
+    if (monthWith31Days.includes(date.getMonth())) {
+      endOfMonth = new Date(date.getFullYear(), date.getMonth(), 31); // 31st day
+    } else if (date.getMonth() === 1) {
+      // February: Check for leap year (February has 29 days in a leap year)
+      const isLeapYear =
+        (date.getFullYear() % 4 === 0 && date.getFullYear() % 100 !== 0) ||
+        date.getFullYear() % 400 === 0;
+      endOfMonth = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        isLeapYear ? 29 : 28
+      ); // 29th day if leap year, otherwise 28th
+    } else {
+      endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0); // 30th day for other months
+    }
+
+    setDateRange([startOfMonth, endOfMonth]);
   };
 
   return (
@@ -203,8 +232,18 @@ const ManageVehicle = () => {
                 className="date-picker-input"
                 value={
                   dateRange[0] && dateRange[1]
-                    ? `${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`
-                    : "Select Date Range"
+                    ? `${dateRange[0].toLocaleDateString("en-GB", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      }).replace(/\//g, "-")} - ${dateRange[1]
+                        .toLocaleDateString("en-GB", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        })
+                        .replace(/\//g, "-")}`
+                    : "Select Month"
                 }
                 readOnly
               />
@@ -212,16 +251,11 @@ const ManageVehicle = () => {
             {calendarOpen && (
               <DatePicker
                 selected={dateRange[0]}
-                onChange={(update) => {
-                  setDateRange(update);
-                  setCalendarOpen(false); // Close the calendar after selecting the date range
-                }}
-                startDate={dateRange[0]}
-                endDate={dateRange[1]}
-                selectsRange
+                onChange={handleMonthSelect}
+                showMonthYearPicker
                 inline
-                dateFormat="yyyy-MM-dd"
-                onClickOutside={() => setCalendarOpen(false)} // Close when clicking outside
+                dateFormat="yyyy-MM-DD"
+                onClickOutside={() => setCalendarOpen(false)}
               />
             )}
           </div>

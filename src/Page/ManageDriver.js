@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendar } from "react-icons/fa";
+import axios from "axios";
 import "./ManageDetails.css";
 import "./Dashboard.css";
-import axios from "axios";
 
 const ManageDriver = () => {
   const [drivers, setDrivers] = useState([]);
@@ -17,7 +17,7 @@ const ManageDriver = () => {
   const [paymentDetails, setPaymentDetails] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false); // Calendar visibility state
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
     const fetchTotalPayments = async () => {
@@ -28,12 +28,15 @@ const ManageDriver = () => {
         setTotalPayments(response.data[0]?.total_payments || 0);
       } catch (error) {
         console.error("Error fetching total payments:", error);
-        showAlertMessage(error.response?.data?.message || "Failed to fetch total payments. Please try again.");
+        showAlertMessage(
+          error.response?.data?.message ||
+            "Failed to fetch total payments. Please try again."
+        );
       }
     };
 
     fetchTotalPayments();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const fetchDrivers = async () => {
@@ -68,24 +71,20 @@ const ManageDriver = () => {
         end_date: formattedEndDate,
       };
 
-      // Make the API request with a POST method
       const response = await axios.post(
         "http://localhost:10000/api/driver/manage/details",
         requestBody
       );
 
-      console.log("Requesting with body:", requestBody);
-
-      // Check if response contains payments data
       if (response.data.payments && response.data.payments.length > 0) {
-        setPaymentDetails(response.data.payments); // Set payments array to state
-        setTotalPayments(response.data.total_payments); // Set total payments
+        setPaymentDetails(response.data.payments);
+        setTotalPayments(response.data.total_payments);
       } else {
-        setPaymentDetails([]); // No payments found
+        setPaymentDetails([]);
         setTotalPayments(0);
       }
 
-      setShowModal(true); // Show modal with payment details
+      setShowModal(true);
     } catch (error) {
       console.error("Error fetching payment details:", error);
       showAlertMessage(error.response?.data?.message || "No Payments details.");
@@ -110,6 +109,32 @@ const ManageDriver = () => {
 
   const toggleDetails = () => {
     setIsDetailsOpen((prev) => !prev);
+  };
+
+  const handleMonthSelect = (date) => {
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    let endOfMonth;
+
+    // Check if the selected month has 31 days
+    const monthWith31Days = [0, 2, 4, 6, 7, 9, 11]; // 0 - Jan, 2 - Mar, 4 - May, etc.
+
+    if (monthWith31Days.includes(date.getMonth())) {
+      endOfMonth = new Date(date.getFullYear(), date.getMonth(), 31); // 31st day
+    } else if (date.getMonth() === 1) {
+      // February: Check for leap year (February has 29 days in a leap year)
+      const isLeapYear =
+        (date.getFullYear() % 4 === 0 && date.getFullYear() % 100 !== 0) ||
+        date.getFullYear() % 400 === 0;
+      endOfMonth = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        isLeapYear ? 29 : 28
+      ); // 29th day if leap year, otherwise 28th
+    } else {
+      endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0); // 30th day for other months
+    }
+
+    setDateRange([startOfMonth, endOfMonth]);
   };
 
   return (
@@ -172,7 +197,6 @@ const ManageDriver = () => {
                 const driverName = e.target.value;
                 setSelectedDriver(driverName);
 
-                // Find the selected driver's license number
                 const selectedDriverObj = drivers.find(
                   (driver) => driver.name === driverName
                 );
@@ -192,7 +216,7 @@ const ManageDriver = () => {
 
           {/* Date Range Picker */}
           <div className="date-picker-container">
-            <label>Select Date Range:</label>
+            <label>Select Month:</label>
             <div
               className="date-picker-wrapper"
               onClick={() => setCalendarOpen(true)}
@@ -203,8 +227,18 @@ const ManageDriver = () => {
                 className="date-picker-input"
                 value={
                   dateRange[0] && dateRange[1]
-                    ? `${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`
-                    : "Select Date Range"
+                    ? `${dateRange[0].toLocaleDateString("en-GB", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      }).replace(/\//g, "-")} - ${dateRange[1]
+                        .toLocaleDateString("en-GB", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        })
+                        .replace(/\//g, "-")}`
+                    : "Select Month"
                 }
                 readOnly
               />
@@ -212,16 +246,11 @@ const ManageDriver = () => {
             {calendarOpen && (
               <DatePicker
                 selected={dateRange[0]}
-                onChange={(update) => {
-                  setDateRange(update);
-                  setCalendarOpen(false); // Close the calendar after selecting the date range
-                }}
-                startDate={dateRange[0]}
-                endDate={dateRange[1]}
-                selectsRange
+                onChange={handleMonthSelect}
+                showMonthYearPicker
                 inline
-                dateFormat="yyyy-MM-dd"
-                onClickOutside={() => setCalendarOpen(false)} // Close when clicking outside
+                dateFormat="yyyy-MM-DD"
+                onClickOutside={() => setCalendarOpen(false)}
               />
             )}
           </div>
