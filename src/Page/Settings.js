@@ -106,43 +106,45 @@ function Settings() {
       </aside>
 
       {/* Main Content */}
-      <main className="settings-main">
+      <div className="settings-main">
         <h1>Settings</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Change Username</label>
-            <input
-              type="text"
-              id="username"
-              placeholder="Enter new username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
+        <div>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="username">Change Username</label>
+              <input
+                type="text"
+                id="username"
+                placeholder="Enter new username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Change Password</label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter new password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="password">Change Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Enter new password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-          {error && <div className="error-message">{error}</div>}
+            {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="save-button" disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
-          </button>
-        </form>
-        <footer>
+            <button type="submit" className="save-button" disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </button>
+          </form>
+        </div>
+        <footer className="login-footer">
           <p>
             Solution by DraveSpace<br></br>077 673 4021
           </p>
         </footer>
-      </main>
+      </div>
 
       {/* Modal */}
       {isModalOpen && (
