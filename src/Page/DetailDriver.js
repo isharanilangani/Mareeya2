@@ -16,7 +16,7 @@ const DetailDriver = () => {
   const [, setSelectedDriver] = useState(null);
   const [driverToDelete, setDriverToDelete] = useState(null);
   const [newDriver, setNewDriver] = useState({
-    vehicle_number: "",
+    vehicle_numbers: [""],
     name: "",
     license_number: "",
     contact: "",
@@ -25,6 +25,41 @@ const DetailDriver = () => {
   const [vehicleNumbers, setVehicleNumbers] = useState([]);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
   const [vehicleFetchError, setVehicleFetchError] = useState(null);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewDriver((prevDriver) => ({
+      ...prevDriver,
+      [name]: value,
+    }));
+  };
+
+  const handleVehicleChange = (e, index) => {
+    const { value } = e.target;
+    const updatedVehicles = [...newDriver.vehicle_numbers];
+    updatedVehicles[index] = value;
+    setNewDriver((prevDriver) => ({
+      ...prevDriver,
+      vehicle_numbers: updatedVehicles,
+    }));
+  };
+
+  const addVehicle = () => {
+    setNewDriver((prevDriver) => ({
+      ...prevDriver,
+      vehicle_numbers: [...prevDriver.vehicle_numbers, ""],
+    }));
+  };
+
+  const removeVehicle = (index) => {
+    const updatedVehicles = newDriver.vehicle_numbers.filter(
+      (_, i) => i !== index
+    );
+    setNewDriver((prevDriver) => ({
+      ...prevDriver,
+      vehicle_numbers: updatedVehicles,
+    }));
+  };
 
   const showSuccess = (message) => {
     setSuccessMessage(message);
@@ -106,7 +141,9 @@ const DetailDriver = () => {
         fetchDrivers();
         showSuccess(response.data.message || "Driver updated successfully!");
       } catch (error) {
-        showSuccess(error.response?.data?.message || "Failed to update drivers.");
+        showSuccess(
+          error.response?.data?.message || "Failed to update drivers."
+        );
       }
     } else {
       try {
@@ -132,11 +169,6 @@ const DetailDriver = () => {
       }
     }
     resetModal();
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewDriver({ ...newDriver, [name]: value });
   };
 
   const resetModal = () => {
@@ -282,27 +314,62 @@ const DetailDriver = () => {
                 onChange={handleInputChange}
                 required
               />
-              <select
-                name="vehicle_number"
-                value={newDriver.vehicle_number}
-                onChange={handleInputChange}
-                onClick={handleVehicleDropdownClick}
-                required
-                disabled={isEditing}
-              >
-                <option value="">Select Vehicle Number</option>
-                {isLoadingVehicles ? (
-                  <option>Loading...</option>
-                ) : vehicleFetchError ? (
-                  <option>{vehicleFetchError}</option>
-                ) : (
-                  vehicleNumbers.map((vehicle) => (
-                    <option key={vehicle.vehicle_number} value={vehicle.vehicle_number}>
-                      {vehicle.vehicle_number}
-                    </option>
-                  ))
-                )}
-              </select>
+
+              {/* Multiple vehicle numbers */}
+              <div>
+                <label htmlFor="vehicle_numbers">Vehicle Numbers</label>
+                <div id="vehicle_numbers">
+                  {newDriver.vehicle_numbers.map((vehicle, index) => (
+                    <div key={index} className="vehicle-input">
+                      <select
+                        name={`vehicle_number_${index}`}
+                        value={vehicle}
+                        onChange={(e) => handleVehicleChange(e, index)}
+                        onClick={handleVehicleDropdownClick} // Trigger on click to fetch data
+                        required
+                        disabled={isEditing}
+                      >
+                        <option value="">Select Vehicle Number</option>
+                        {isLoadingVehicles ? (
+                          <option>Loading...</option>
+                        ) : vehicleFetchError ? (
+                          <option>{vehicleFetchError}</option>
+                        ) : (
+                          vehicleNumbers
+                            .filter(
+                              (vehicleOption) =>
+                                !newDriver.vehicle_numbers.includes(
+                                  vehicleOption.vehicle_number
+                                ) || vehicleOption.vehicle_number === vehicle
+                            ) // Keep the selected vehicle number in the options list
+                            .map((vehicleOption) => (
+                              <option
+                                key={vehicleOption.vehicle_number}
+                                value={vehicleOption.vehicle_number}
+                              >
+                                {vehicleOption.vehicle_number}
+                              </option>
+                            ))
+                        )}
+                      </select>
+
+                      {/* Show remove button (X) only if a vehicle number is selected */}
+                      {vehicle && (
+                        <button
+                          type="button"
+                          onClick={() => removeVehicle(index)}
+                          className="remove-vehicle-btn"
+                        >
+                          &times; {/* This is the "X" symbol */}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button className="action-button" type="button" onClick={addVehicle}>
+                    Add Vehicle
+                  </button>
+                </div>
+              </div>
 
               <div className="modal-buttons">
                 <button type="submit" className="modal-submit-button">
