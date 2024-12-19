@@ -40,23 +40,60 @@
 
 /* Date picker wrapper styling */
 .date-picker-container {
-  display: flex;
-  flex-direction: column;
   position: relative;
-  z-index: 10;
+  display: inline-block;
 }
 
 .date-picker-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
-  position: relative;
-  z-index: 999;
+  cursor: pointer;
 }
 
 .date-picker-icon {
-  font-size: 20px;
+  margin-right: 8px;
   color: #600000;
+}
+
+.date-picker-input {
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.react-datepicker {
+  position: absolute;
+  z-index: 1000;
+  top: 100%; 
+  left: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  background-color: #600000;
+  color: #fff;
+}
+
+.react-datepicker__day--selected:hover,
+.react-datepicker__day--in-selecting-range:hover,
+.react-datepicker__day--in-range:hover {
+  background-color: #d32f2f; 
+  color: #fff;
+  transition: background-color 0.2s ease; 
+}
+
+.react-datepicker__header {
+  background-color: #f9f9f9;
+}
+
+.react-datepicker__triangle {
+  display: none; 
 }
 
 /* Action button styling */
@@ -128,7 +165,7 @@
 }
 
 .close-modal-btn {
-  background: #ff6b6b;
+  background: #600000;
   border: none;
   color: #fff;
   font-size: 16px;
@@ -139,7 +176,7 @@
 }
 
 .close-modal-btn:hover {
-  background: #e63939;
+  background: #d32f2f;
 }
 
 .custom-modal-body h5 {
