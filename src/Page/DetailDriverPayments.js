@@ -136,15 +136,19 @@ const DetailDriverPayments = () => {
           console.log(paymentData);
           setPayments((prevPayments) =>
             prevPayments.map((payment) =>
-              payment.licenseNumber !== newPayment.licenseNumber 
+              payment.licenseNumber !== newPayment.licenseNumber
                 ? { ...payment, ...newPayment }
                 : payment
             )
           );
           fetchPayments();
-          showSuccess(response.data.message || "Payments updated successfully!");
+          showSuccess(
+            response.data.message || "Payments updated successfully!"
+          );
         } catch (error) {
-          showSuccess(error.response?.data?.message || "Failed to updated payment.");
+          showSuccess(
+            error.response?.data?.message || "Failed to updated payment."
+          );
         }
       } else {
         // Add new payments
@@ -295,10 +299,10 @@ const DetailDriverPayments = () => {
               </h2>
               {/* Driver Name Dropdown */}
               <select
-                value={newPayment.licenseNumber} // Bind to `licenseNumber`
+                value={newPayment.driverName}
                 onChange={(e) => {
                   const selectedDriver = driverName.find(
-                    (driver) => driver.license_number === e.target.value
+                    (driver) => driver.name === e.target.value
                   );
                   setNewPayment({
                     ...newPayment,
@@ -306,34 +310,33 @@ const DetailDriverPayments = () => {
                     driverName: selectedDriver?.name || "",
                   });
                 }}
-                onClick={handleDriverDropdownClick} // Fetch data on click
+                onClick={() => handleDriverDropdownClick()} // Fetch only once
                 required
-                disabled={isEditing} // Disable when editing
+                disabled={isEditing} // Disable during editing
               >
-                <option value="">Select License Number</option>
+                <option value="">Select Driver Name</option>
                 {isLoadingDrivers && <option>Loading...</option>}
                 {driverFetchError && (
                   <option disabled>{driverFetchError}</option>
                 )}
                 {!isLoadingDrivers &&
-                  !driverFetchError &&
                   driverName
-                    .filter((driver) => driver.license_number !== "None") // Exclude "None" values
+                    .filter((driver) => driver.name !== "None")
                     .map((driver) => (
-                      <option key={driver.name} value={driver.license_number}>
-                        {driver.license_number}
+                      <option key={driver.license_number} value={driver.name}>
+                        {driver.name}
                       </option>
                     ))}
               </select>
 
               <input
                 type="text"
-                placeholder="Driver Name"
-                value={newPayment.driverName}
+                placeholder="License number"
+                value={newPayment.licenseNumber}
                 onChange={(e) =>
                   setNewPayment({
                     ...newPayment,
-                    driverName: e.target.value,
+                    licenseNumber: e.target.value,
                   })
                 }
                 required
