@@ -6,44 +6,74 @@ const moment = require("moment");
 // Register or Update Vehicle and Driver
 router.put("/:driver_id", (req, res) => {
   const { driver_id } = req.params;
-  const { driver_name, contact, license_number } = req.body;
+  const { driver_name, contact, license_number, vehicle_numbers } = req.body;
 
   // Validate required fields
-  if (!driver_id || !contact || !driver_name || !license_number) {
-    return res.status(400).json({ message: "All fields are required." });
+  if (!driver_id || !contact || !driver_name || !license_number || !vehicle_numbers || !Array.isArray(vehicle_numbers)) {
+    return res.status(400).json({ message: "All fields are required and vehicle_numbers must be an array." });
   }
 
-  const vehicleQuery =
-    "SELECT * FROM drivers WHERE driver_id = ?";
-  db.query(vehicleQuery, [driver_id], (err, vehicleRows) => {
+  // Validate if the array of vehicle numbers is not empty
+  if (vehicle_numbers.length === 0) {
+    return res.status(400).json({ message: "At least one vehicle number is required." });
+  }
+
+  // Query to check if driver exists
+  const driverQuery = "SELECT * FROM drivers WHERE driver_id = ?";
+  db.query(driverQuery, [driver_id], (err, driverRows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: "Database error occurred." });
     }
 
-    if (vehicleRows.length > 0) {
+    if (driverRows.length > 0) {
       const createdDate = moment().format("YYYY-MM-DD HH:mm:ss");
-      const updateDriverQuery =
-        "UPDATE drivers SET name = ?, contact = ?, license_number = ?, created_date = ? WHERE driver_id = ?";
-      db.query(
-        updateDriverQuery,
-        [driver_name, contact, license_number, createdDate, driver_id],
-        (err) => {
+
+      // Update driver details
+      const updateDriverQuery = "UPDATE drivers SET name = ?, contact = ?, license_number = ?, created_date = ? WHERE driver_id = ?";
+      db.query(updateDriverQuery, [driver_name, contact, license_number, createdDate, driver_id], (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Failed to update driver details." });
+        }
+
+        // Get vehicle IDs for the relevant vehicle numbers
+        const vehicleQuery = "SELECT vehicle_id FROM vehicles WHERE vehicle_number IN (?)";
+        db.query(vehicleQuery, [vehicle_numbers], (err, vehicleRows) => {
           if (err) {
             console.error(err);
-            return res
-              .status(500)
-              .json({ message: "Failed to update driver details." });
+            return res.status(500).json({ message: "Failed to fetch vehicle IDs." });
           }
-          return res
-            .status(200)
-            .json({ message: "Driver details updated successfully." });
-        }
-      );
-    } else {
-      return res.status(404).json({
-        message: "Driver not found.",
+
+          if (vehicleRows.length === 0) {
+            return res.status(404).json({ message: "No vehicles found with the given vehicle numbers." });
+          }
+
+          // Delete driver ID from the driverby table for relevant vehicles
+          const deleteDriverQuery = "DELETE FROM driverby WHERE driver_id = ?";
+          db.query(deleteDriverQuery, [driver_id], (err) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: "Failed to delete driver associations from driverby table." });
+            }
+
+            // Insert new driver ID for the relevant vehicles
+            const insertDriverQuery = "INSERT INTO driverby (vehicle_id, driver_id) VALUES ?";
+            const vehicleIds = vehicleRows.map((row) => [row.vehicle_id, driver_id]);
+
+            db.query(insertDriverQuery, [vehicleIds], (err) => {
+              if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Failed to associate vehicles with driver." });
+              }
+
+              return res.status(200).json({ message: "Driver details and vehicle associations updated successfully." });
+            });
+          });
+        });
       });
+    } else {
+      return res.status(404).json({ message: "Driver not found." });
     }
   });
 });
@@ -303,6 +333,75 @@ router.get("/name", (req, res) => {
     }
 
     res.json(results);
+  });
+});
+
+router.get("/vehicle/numbers", (req, res) => {
+  const { license_number } = req.query;
+
+  if (!license_number) {
+    return res.status(400).json({ message: "License number is required" });
+  }
+
+  // Query to find the driver by license number and get their driver_id
+  const driverQuery = `
+    SELECT driver_id
+    FROM drivers
+    WHERE license_number = ?
+  `;
+
+  db.query(driverQuery, [license_number], (err, driverResults) => {
+    if (err) {
+      console.error("Error fetching driver data:", err);
+      return res.status(500).send("Error fetching driver data.");
+    }
+
+    // Check if the driver was found
+    if (driverResults.length === 0) {
+      return res.status(404).json({ message: "Driver not found with the given license number." });
+    }
+
+    const driver_id = driverResults[0].driver_id;
+
+    // Query to find all vehicle_ids associated with this driver_id from driverby table
+    const vehicleQuery = `
+      SELECT vehicle_id
+      FROM driverby
+      WHERE driver_id = ?
+    `;
+
+    db.query(vehicleQuery, [driver_id], (err, vehicleResults) => {
+      if (err) {
+        console.error("Error fetching vehicle data:", err);
+        return res.status(500).send("Error fetching vehicle data.");
+      }
+
+      // Check if vehicles are found for this driver
+      if (vehicleResults.length === 0) {
+        return res.status(404).json({ message: "No vehicles found for this driver." });
+      }
+
+      // Get all vehicle_ids
+      const vehicleIds = vehicleResults.map(row => row.vehicle_id);
+
+      // Now, fetch the vehicle numbers for the corresponding vehicle_ids
+      const vehicleNumbersQuery = `
+        SELECT vehicle_number
+        FROM vehicles
+        WHERE vehicle_id IN (?)
+      `;
+
+      db.query(vehicleNumbersQuery, [vehicleIds], (err, vehicleNumbersResults) => {
+        if (err) {
+          console.error("Error fetching vehicle numbers:", err);
+          return res.status(500).send("Error fetching vehicle numbers.");
+        }
+
+        // Return the list of vehicle numbers associated with the driver
+        const vehicleNumbers = vehicleNumbersResults.map(row => row.vehicle_number);
+        return res.status(200).json({ vehicle_numbers: vehicleNumbers });
+      });
+    });
   });
 });
 

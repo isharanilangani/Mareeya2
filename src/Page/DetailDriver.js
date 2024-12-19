@@ -13,7 +13,6 @@ const DetailDriver = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [, setSelectedDriver] = useState(null);
   const [driverToDelete, setDriverToDelete] = useState(null);
   const [newDriver, setNewDriver] = useState({
     vehicle_numbers: [""],
@@ -25,7 +24,8 @@ const DetailDriver = () => {
   const [vehicleNumbers, setVehicleNumbers] = useState([]);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
   const [vehicleFetchError, setVehicleFetchError] = useState(null);
-
+  const [, setSelectedDriver] = useState(null);
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewDriver((prevDriver) => ({
@@ -124,6 +124,7 @@ const DetailDriver = () => {
           driver_name: newDriver.name,
           contact: newDriver.contact,
           license_number: newDriver.license_number,
+          vehicle_numbers: newDriver.vehicle_numbers,
         };
 
         const response = await axios.put(
@@ -151,7 +152,7 @@ const DetailDriver = () => {
           driver_name: newDriver.name,
           license_number: newDriver.license_number,
           contact: newDriver.contact,
-          vehicle_numbers: newDriver.vehicle_numbers, // Make sure this is an array of vehicle numbers
+          vehicle_numbers: newDriver.vehicle_numbers,
         };
 
         console.log("Adding new driver:", addDriver);
@@ -212,13 +213,42 @@ const DetailDriver = () => {
     setIsDetailsOpen((prev) => !prev);
   };
 
-  const handleUpdate = (driver) => {
+  const handleUpdate = async (driver) => {
     setSelectedDriver(driver);
-    setNewDriver(driver);
     setIsEditing(true);
-    setShowModal(true);
+    setShowModal(true); // Open modal early if needed for UX
+  
+    try {
+      // Fetch vehicle numbers for the driver
+      const response = await fetch(
+        `http://localhost:10000/api/driver/vehicle/numbers?license_number=${driver.license_number}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch vehicle numbers");
+      }
+  
+      const vehicleData = await response.json();
+      console.log("Fetched Vehicle Numbers:", vehicleData); // Debugging
+  
+      // Ensure you access the `vehicle_numbers` array from the object
+      if (!vehicleData.vehicle_numbers || !Array.isArray(vehicleData.vehicle_numbers)) {
+        throw new Error("Invalid vehicle numbers format");
+      }
+  
+      // Update newDriver with fetched vehicle numbers
+      setNewDriver({
+        ...driver,
+        vehicle_numbers: vehicleData.vehicle_numbers, // Use the array directly
+      });
+    } catch (error) {
+      console.error("Error fetching vehicle numbers:", error);
+      setNewDriver({
+        ...driver,
+        vehicle_numbers: [], // Fallback to empty array if fetching fails
+      });
+    }
   };
-
+  
   const openDeleteConfirmation = (driver) => {
     setDriverToDelete(driver);
     setShowDeleteConfirmation(true);
@@ -330,7 +360,6 @@ const DetailDriver = () => {
                         onChange={(e) => handleVehicleChange(e, index)}
                         onClick={handleVehicleDropdownClick} // Trigger on click to fetch data
                         required
-                        disabled={isEditing}
                       >
                         <option value="">Select Vehicle Number</option>
                         {isLoadingVehicles ? (
