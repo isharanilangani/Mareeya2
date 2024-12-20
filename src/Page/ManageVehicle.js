@@ -309,8 +309,8 @@ const ManageVehicle = () => {
                   : "Not selected"}
               </h5>
               <h5>Total Payments: {totalExpenses} LKR</h5>
-              <div className="Detail-table-container">
-                <table className="Detail-table">
+              <div className="manage-table-container">
+                <table className="manage-table">
                   <thead>
                     <tr>
                       <th>Payment Date</th>
