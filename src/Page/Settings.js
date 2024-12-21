@@ -23,7 +23,7 @@ function Settings() {
       await axios.put("http://localhost:10000/api/auth/update", {
         username,
         password,
-        userId: "14",
+        userId: "15",
       });
 
       setLoading(false);
