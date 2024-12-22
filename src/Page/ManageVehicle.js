@@ -210,7 +210,7 @@ const ManageVehicle = () => {
                 );
               }}
             >
-              <option value="">Select Vehicle</option>
+              <option value="" className="select">Select Vehicle</option>
               {vehicles.map((vehicle) => (
                 <option key={vehicle.id} value={vehicle.vehicle_number}>
                   {vehicle.vehicle_number}

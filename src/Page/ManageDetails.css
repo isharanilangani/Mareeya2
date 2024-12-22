@@ -60,12 +60,13 @@
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+  color: #666;
 }
 
 .react-datepicker {
   position: absolute;
   z-index: 1000;
-  top: 100%; 
+  top: 100%;
   left: 0;
   background: #fff;
   border: 1px solid #ccc;
@@ -81,7 +82,7 @@
 
 .react-datepicker__month {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); 
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   padding: 0;
   text-align: center;
@@ -101,7 +102,7 @@
 }
 
 .react-datepicker__triangle {
-  display: none; 
+  display: none;
 }
 
 /* Action button styling */
@@ -242,6 +243,10 @@
 
 .manage-table tr:hover {
   background-color: #f1f1f1;
+}
+
+.select {
+  color: #666;
 }
 
 /* Footer Style */

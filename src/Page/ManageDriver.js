@@ -205,7 +205,7 @@ const ManageDriver = () => {
                 );
               }}
             >
-              <option value="">Select Driver</option>
+              <option value="" className="select">Select Driver</option>
               {drivers.map((driver) => (
                 <option key={driver.id} value={driver.name}>
                   {driver.name} - {driver.license_number}
