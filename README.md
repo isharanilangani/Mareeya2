@@ -1,70 +1,77 @@
-# Getting Started with Create React App
+# Getting Started with Vehicle Mangament system
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a React-based application with functionalities like charts, file uploading, date pickers, and routing.
 
-## Available Scripts
+## **Features**
 
-In the project directory, you can run:
+- **Axios**: For making HTTP requests.
+- **Chart.js and react-chartjs-2**: For creating interactive charts.
+- **Cropper.js and react-cropper**: For cropping images.
+- **React Icons**: For adding scalable vector icons.
+- **Font Awesome**: For additional icon support.
+- **React Router DOM**: For client-side routing.
+- **Multer**: For handling file uploads.
+- **React Datepicker**: For selecting dates in forms.
 
-### `npm start`
+## **Prerequisites**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Ensure you have the following installed:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Node.js** (version 16.x or higher): [Download Node.js](https://nodejs.org/)
+- **npm** (Node Package Manager): Comes bundled with Node.js
 
-### `npm test`
+## **Setup Instructions**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Step 1: Clone the Repository
 
-### `npm run build`
+1. Open your terminal and navigate to the directory where you want to clone the project.
+2. Run the following command:
+   ```bash
+   git clone <repository-url>
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Navigate to the project folder
+4. Database Setup
+    - Open your MySQL client (MySQL Workbench, phpMyAdmin, or terminal).
+    - CREATE DATABASE mareeya;
+    - mysql -u <your-username> -p app_database_name < backend/database/mareeya(1).sql  
+5. Backend Setup
+    - cd backend
+    - npm install
+    - npm install bcrypt@^5.1.1 body-parser@^1.20.3 cors@^2.8.5 dotenv@^16.4.5 express@^4.21.1 jsonwebtoken@^9.0.2 moment@^2.30.1 mysql2@^3.11.4
+    - npm start
+    - http://localhost:10000  
+6. Frontend Setup
+   - npm install
+   - npm install axios@^1.7.9 chart.js@^4.4.7 cra-template@1.2.0 cropperjs@^1.6.2 font-awesome@^4.7.0 multer@^1.4.5-lts.1 react@^18.3.1 react-chartjs-2@^5.2.0 react-cropper@^2.3.3 react-datepicker@^7.5.0 react-dom@^18.3.1 react-icons@^5.4.0 react-router-dom@^7.0.2 react-scripts@5.0.1 web-vitals@^4.2.4
+    - npm start
+    - http://localhost:3000
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## **Project Dependencies**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+axios: HTTP client for API communication.
+chart.js: For creating charts.
+cra-template: React template for create-react-app.
+cropperjs: For image cropping.
+font-awesome: Icon library.
+multer: Middleware for handling file uploads.
+react: React library for building UI.
+react-chartjs-2: React wrapper for Chart.js.
+react-cropper: React wrapper for Cropper.js.
+react-datepicker: Date picker component for React.
+react-dom: React library for DOM rendering.
+react-icons: Icon library for React.
+react-router-dom: Routing library for React.
+react-scripts: Scripts for building React apps.
+web-vitals: For measuring performance.
 
-### `npm run eject`
+## **Scripts**
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+npm start: Starts the development server.
+npm run build: Builds the app for production.
+npm test: Launches the test runner
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## **Troubleshooting**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Ensure all dependencies are installed with npm install.
+Verify that Node.js and npm are installed and up to date.
+If the development server doesn't start, check for conflicts on port 3000.
