@@ -89,18 +89,71 @@ router.put("/:vehicle_id", (req, res) => {
 // API to get all vehicles
 router.get("/", (req, res) => {
   const query = `
-    SELECT *
+    SELECT 
+      vehicles.vehicle_id,
+      vehicles.vehicle_number,
+      vehicles.type,
+      vehicles.brand,
+      vehicles.purchase_date,
+      vehicles.status,
+      vehicles.created_date,
+      drivers.driver_id,
+      drivers.name AS driver_name
     FROM vehicles
+    LEFT JOIN driverby ON vehicles.vehicle_id = driverby.vehicle_id
+    LEFT JOIN drivers ON driverby.driver_id = drivers.driver_id
   `;
 
   db.query(query, (err, results) => {
     if (err) {
-      console.error("Error fetching vehicles and driver names:", err);
-      res.status(500).send("Error fetching vehicles and driver names.");
+      console.error("Error fetching vehicles and drivers:", err);
+      res.status(500).send("Error fetching data.");
       return;
     }
 
-    res.json(results);
+    // Group results by vehicle_id
+    const groupedResults = results.reduce((acc, row) => {
+      const {
+        vehicle_id,
+        vehicle_number,
+        type,
+        brand,
+        purchase_date,
+        status,
+        created_date,
+        driver_id,
+        driver_name,
+      } = row;
+
+      // Initialize the vehicle entry if it doesn't exist
+      if (!acc[vehicle_id]) {
+        acc[vehicle_id] = {
+          vehicle_id,
+          vehicle_number,
+          type,
+          brand,
+          purchase_date,
+          status,
+          created_date,
+          drivers: [],
+        };
+      }
+
+      // Add driver details to the drivers array
+      if (driver_id && driver_name) {
+        acc[vehicle_id].drivers.push({
+          driver_id,
+          name: driver_name,
+        });
+      }
+
+      return acc;
+    }, {});
+
+    // Convert the grouped object to an array
+    const finalResponse = Object.values(groupedResults);
+
+    res.json(finalResponse);
   });
 });
 

@@ -317,6 +317,7 @@ const DetailVehicle = () => {
                 <th>Brand</th>
                 <th>Purchase Date</th>
                 <th>Status</th>
+                <th>Driver Name</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -328,6 +329,11 @@ const DetailVehicle = () => {
                   <td>{vehicle.brand}</td>
                   <td>{vehicle.purchase_date}</td>
                   <td>{vehicle.status}</td>
+                  <td>
+                    {vehicle.drivers.map((driver, index) => (
+                      <div key={index}>{driver.name}</div>
+                    ))}
+                  </td>
                   <td>
                     <div className="action">
                       <button
